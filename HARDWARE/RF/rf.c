@@ -41,7 +41,6 @@ u8 RF_FOCUS=TASK_MAX_NUM;
 
 
 u8 USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
-//u8 USART_RX_BUF2[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 
 static u16 RX_START=0;		//记录读取结束的位置，实现数据队列
 static u16 RET_START=0;	//接收结束的位置
@@ -95,14 +94,6 @@ int fputc(int ch, FILE *f)
 
 
 
-				//复制数据
-void copy_data (u8 *from,u8 *to,u16 length)
-{
-	while(length--)
-	{
-		*to++=*from++;
-	}
-}
 
 
 void RF_SetFocus(u8 focus)

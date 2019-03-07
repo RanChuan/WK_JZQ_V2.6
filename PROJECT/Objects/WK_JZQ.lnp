@@ -62,6 +62,7 @@
 ".\objects\ping.o"
 ".\objects\power.o"
 ".\objects\wk_json.o"
+".\objects\cmd.o"
 ".\objects\my_autocontrol.o"
 ".\objects\my_cfg.o"
 ".\objects\my_debug.o"

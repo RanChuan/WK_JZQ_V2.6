@@ -66,4 +66,5 @@
 .\objects\my_debug.o: ..\SOFTWARE\BAIDU_IOT\baidu_iot.h
 .\objects\my_debug.o: ..\MY_TASK\my_idle.h
 .\objects\my_debug.o: ..\SOFTWARE\WK_JSON\wk_json.h
+.\objects\my_debug.o: ..\SOFTWARE\CMD\cmd.h
 .\objects\my_debug.o: ..\MY_TASK\my_debug.h

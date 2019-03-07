@@ -7,22 +7,45 @@
 #include "baidu_iot.h"
 #include "my_idle.h"
 #include "wk_json.h"
+#include "cmd.h"
 #include "my_debug.h"
 
-
+static u16 NativeDbgPort=12;
+static u8 DBG_IAP=0;
 void my_debug (void)
 {
+	
 	if (net_get_comstate(1)==SOCK_CLOSED)
 	{
-		if (udp_init(1,12))
+		if (udp_init(1,NativeDbgPort))
 		{
 			dbg_booting();
 		}
 	}
-	if (checkSocketState(1,IR_RECV))//如果有数据等待接收
+	
+	do
 	{
-		dbg_Interpreter();//命令解释器
-	}
+		if (checkSocketState(1,IR_RECV))//如果有数据等待接收
+		{
+			u8 *recvbuff=mymalloc(2048);
+			memset(recvbuff,0,2048);//清空内存中的数据
+			Read_SOCK_Data_Buffer(1, recvbuff);
+
+			//重新设置调试主机目标地址
+			mymemcpy(DBG_IP,recvbuff,4);
+			DBG_PORT=(recvbuff[4]<<8)|recvbuff[5];
+
+			if (DBG_PORT==7010)
+			{
+				cmd_byudp (recvbuff+8); 
+			}
+			else 
+			{
+				dbg_Interpreter(recvbuff);//命令解释器
+			}
+			myfree(recvbuff);
+		}
+	}while (DBG_IAP);
 }
 
 /*****************************************************
@@ -35,18 +58,11 @@ void my_debug (void)
 
 ******************************************************/
 
-u8 DBG_OCHE =0;//回显
+static u8 DBG_OCHE =0;//回显
 u8 DBG_IP[4]={255,255,255,255};//调试用的目标ip地址
 u16 DBG_PORT=7000;//调试用的端口号
-void dbg_Interpreter(void)
+void dbg_Interpreter(u8 *recvbuff)
 {
-	u8 *recvbuff=mymalloc(2048);
-	memset(recvbuff,0,2048);//清空内存中的数据
-	Read_SOCK_Data_Buffer(1, recvbuff);
-	
-	//重新设置调试主机目标地址
-	mymemcpy(DBG_IP,recvbuff,4);
-	DBG_PORT=(recvbuff[4]<<8)|recvbuff[5];
 
 	if (DBG_OCHE)
 	{
@@ -105,7 +121,6 @@ void dbg_Interpreter(void)
 	}
 
 	
-	myfree(recvbuff);
 }
 
 
@@ -200,7 +215,21 @@ ptxt="文件系统状态：";
 	sprintf(txtbuff,"编译时间：%s ---- %s\r\n",__DATE__,__TIME__);
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 
-
+	if (IAP_Support)
+	{
+		sprintf(txtbuff,"IAP程序版本：-- %s --\r\n",IAP_Version);
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+			
+		sprintf(txtbuff,"IAP程序编译时间：---- %s ----\r\n",IAP_CompileTime);
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+	}
+	else
+	{
+		
+		sprintf(txtbuff,"不支持IAP升级");
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));		
+		
+	}
 	myfree(txtbuff);
 }
 
@@ -294,7 +323,7 @@ void dbg_help(void)
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
 	ptxt="\t输入\"copy host on\"开始复制与上位机的数据交换到本端口\
-			\n\t输入\"copy host on [端口号]\"开始复制与上位机的数据交换到指定的端口\r\n\t输入\"copy host off\"停止\r\n";
+			\r\n\t输入\"copy host on [端口号]\"开始复制与上位机的数据交换到指定的端口\r\n\t输入\"copy host off\"停止\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
 	ptxt="\t输入\"devconfig\"获取设备配置信息\r\n";
@@ -567,9 +596,18 @@ void dbg_set (u8 *chars)
 			sprintf (txtbuff,"已设置网关IP地址为：%d.%d.%d.%d\r\n",getip[0],getip[1],getip[2],getip[3]);
 			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
 		}
+		else if (samestr((u8*)"dbgport ",chars))
+		{
+			u16 port=0;
+			port=str2num(chars+8);
+			NativeDbgPort=port;
+			udp_init(1,NativeDbgPort);
+			sprintf (txtbuff,"已设置集中器的调试端口为：%d 请连接到新端口通信\r\n",port);
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
 		else
 		{
-			ptxt="暂不支持的设置项参数\r\n";
+			ptxt="暂不支持的设置项参数，输入 \"set\" 查看支持的参数\r\n";
 			udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 		}
 	}
@@ -595,9 +633,32 @@ void dbg_set (u8 *chars)
 
 		ptxt="\t输入\"set gatewayip [IP]\"修改集中器的网关IP地址\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		
+		ptxt="\t输入\"set dbgport [端口]\"修改集中器的调试端口\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	}
 	myfree(txtbuff);
 }
+
+
+//专门给cmd命令交互封装的函数
+void cmd_send (u8 *data,u16 datalen )
+{
+	udp_send(1,DBG_IP,DBG_PORT,data,datalen);
+}
+
+
+//通过网络传输程序升级等数据
+void	cmd_byudp (u8 *cmd)
+{
+	if ((cmd[1]==0xff)&&(cmd[0]==0xff))
+	{
+		Get_cmd (cmd_send,cmd);
+		DBG_IAP=1;
+	}
+}
+
+
 
 
 

@@ -362,6 +362,13 @@ void net_test(void)
 	IP_Addr[1]=*ipconfig++;
 	IP_Addr[2]=*ipconfig++;
 	IP_Addr[3]=*ipconfig++;
+
+//	IP_Addr[0]=192;
+//	IP_Addr[1]=168;
+//	IP_Addr[2]=2;
+//	IP_Addr[3]=125;
+
+
 	
 	ipconfig++;		//±¾»ú¶Ë¿ÚºÅ
 	ipconfig++;

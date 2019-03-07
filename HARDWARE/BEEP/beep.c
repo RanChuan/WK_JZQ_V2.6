@@ -3,30 +3,34 @@
 #include "beep.h"
 
 
+/**************************************************
+		文件说明：蜂鸣器驱动，
+		引脚使用：PC13
+		外部引用：10us的定时器中断
+		实现方法：使用软件的脉宽调制，使用定时器中断实现，
+		使用方法：本驱动需要外部引用一个10us的定时器中断服务，本驱动提供的蜂鸣器音乐播放是非阻塞的。
+
+****************************************************/
 
 
-u8 BEEP_BUSY=0;//蜂鸣器正在播放，
 
 
+static u8 BEEP_BUSY=0;//蜂鸣器正在播放，
+
+//播放蜂鸣器音乐中断
 void Beep_Run (void);
 
 void BEEP_Init(void)
-{
- 
- GPIO_InitTypeDef  GPIO_InitStructure;
- 	
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	 //使能GPIOB端口时钟
-
-	
-	
-	
- GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;				 //BEEP-->PB.8 端口配置
- GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
- GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;	 //pc13只能是2M
- GPIO_Init(GPIOC, &GPIO_InitStructure);	 //根据参数初始化GPIOB.8
+{ 
+	GPIO_InitTypeDef  GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	 //使能GPIOB端口时钟
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;				 //BEEP-->PB.8 端口配置
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;	 //pc13只能是2M
+	GPIO_Init(GPIOC, &GPIO_InitStructure);	 //根据参数初始化GPIOB.8
 	RCC_LSEConfig(RCC_LSE_OFF);
-	
- GPIO_ResetBits(GPIOC,GPIO_Pin_13);//输出0，关闭蜂鸣器输出
+
+	GPIO_ResetBits(GPIOC,GPIO_Pin_13);//输出0，关闭蜂鸣器输出
 
 	addTimerIrq10us(Beep_Run);
 }
@@ -1198,7 +1202,7 @@ void Load_down(void)
 
 
 //最高8分之一音，音调的频率
-u16 *sond=0;
+static u16 *sond=0;
 
 //time,8是一个全音，16是两个全音
 void set_jianpu(jianpu *j,char *tone_,char *time_)

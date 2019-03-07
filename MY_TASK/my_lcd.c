@@ -394,7 +394,7 @@ void Auto_sleep()
 void my_lcd_init (void)
 {
 	RELAY=0;
-	delay_ms(1000);
+	delay_ms(4000);
 	Load_LCD();
 	lcd_page(PAGE_MAIN);
 }

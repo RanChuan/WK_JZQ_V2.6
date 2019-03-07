@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-u16 SPI_FLASH_TYPE=W25Q64;//默认就是25Q64
+static u16 SPI_FLASH_Type=W25Q64;//默认就是25Q64
 
 
 #define W25Q_CLK  PBout(5)
@@ -51,7 +51,7 @@ void SPI_Flash_Init(void)
  	GPIO_SetBits(GPIOB,GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7);
 
 
-	SPI_FLASH_TYPE=SPI_Flash_ReadID();//读取FLASH ID.  
+	SPI_FLASH_Type=SPI_Flash_ReadID();//读取FLASH ID.  
 
 }  
 
@@ -64,14 +64,18 @@ u8 W25Q_ReadWriteByte(u8 da)
 	for (i=0;i<8;i++)
 	{
 		W25Q_CLK=0;
-		if (da&0x80)
-			W25Q_MOSI=1;
-		else
-			W25Q_MOSI=0;
-		da<<=1;
+			//delay_us(5);
+			if (da&0x80)
+				W25Q_MOSI=1;
+			else
+				W25Q_MOSI=0;
+			da<<=1;
+			//delay_us(5);
 		W25Q_CLK=1;
-		ret<<=1;
-		ret|=W25Q_MISO;
+			//delay_us(5);
+			ret<<=1;
+			ret|=W25Q_MISO;
+			//delay_us(5);
 	}
 	return ret;
 }
@@ -224,7 +228,8 @@ void SPI_Flash_Write(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)
 		OS_EXIT_ONLYME();
 		return;
 	}
-
+	mymemset(SPI_FLASH_BUF,0xaa,4096);
+	
 	secpos=WriteAddr/4096;//扇区地址 0~511 for w25x16
 	secoff=WriteAddr%4096;//在扇区内的偏移
 	secremain=4096-secoff;//扇区剩余空间大小   
@@ -260,6 +265,7 @@ void SPI_Flash_Write(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite)
 			else secremain=NumByteToWrite;			//下一个扇区可以写完了
 		}	 
 	};	
+	myfree(SPI_FLASH_BUF);
 	OS_EXIT_ONLYME();
 }
 //擦除整个芯片
@@ -318,7 +324,10 @@ void SPI_Flash_WAKEUP(void)
 
 
 
-
+u16 SPI_Flash_GetType (void)
+{
+	return SPI_FLASH_Type;
+}
 
 
 

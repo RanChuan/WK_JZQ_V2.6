@@ -36,14 +36,15 @@
 
 
 
-				//超时时间
+//超时时间
 #define TIME_OUT  10
-					//临时数组长度
+		
+//临时数组长度
 #define BUFF_LENGTH 40
 
 
 
-					//设备状态
+//设备状态
 #define DEVICEON 				0x0100
 #define DEVICEUP 				0x0200
 #define DEVICEDOWN 			0x0400
@@ -81,8 +82,6 @@ u8 RF_SetChannel(u8 channel);
 
 
 
-				//复制数据
-void copy_data (u8 *from,u8 *to,u16 length);
 
 
 

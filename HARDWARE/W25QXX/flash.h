@@ -34,7 +34,10 @@
 #define W25Q64 		0XEF16
 #define W25Q128 	0XEF17
 
-extern u16 SPI_FLASH_TYPE;//定义我们使用的flash芯片型号
+		
+#define SPI_FLASH_TYPE 	SPI_Flash_GetType()	//定义我们使用的flash芯片型号
+		
+
 
 #define	SPI_FLASH_CS PBout(7)  //选中FLASH	
 				 
@@ -74,7 +77,7 @@ void SPI_Flash_PowerDown(void);           //进入掉电模式
 void SPI_Flash_WAKEUP(void);			  //唤醒
 
 
-
+u16 SPI_Flash_GetType (void);
 
 #ifdef __cplusplus
 	}

@@ -20,7 +20,7 @@ void SysPowerOn (void)
 	Sys_Init();
 	if (os_init()!=0) { Load_down();
 	}//不为0初始化失败，一般是文件系统失败
-	
+	SPI_Flash_Init(); 
 //	u8 *buf=malloc(100);
 //	read_json(_T("0:/wk_config.json"),buf,10);
 	
@@ -52,7 +52,7 @@ void Sys_Init(void)
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);// 设置中断优先级分组2
 	TimersInit();
 	BEEP_Init(); 
-	SPI_Flash_Init(); 
+	
 	
 }	
  

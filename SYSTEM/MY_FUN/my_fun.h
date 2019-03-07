@@ -32,6 +32,8 @@ u16 str2num(u8 *str);
 //提取字符串中的数字，用分隔符point分开,有length个数字
 u8 getnumfstr(u8 *out,u8 *strin,u8 point,u8 length);
 		
+//复制数据
+void copy_data (u8 *from,u8 *to,u16 length);
 		
 
 

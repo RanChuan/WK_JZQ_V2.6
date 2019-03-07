@@ -50,9 +50,11 @@
 #define ERR_CANNOTCFG				0x0008			//在不是可配置状态下收到了配置命令
 #define ERR_NOTMYTYPE				0x0009			//所要控制的设备与本机不符
 #define ERR_TIMEOUT					0x000a   		//超时
-#define ERR_OFFLINE         0x000b   		//设备不在线
-#define ERR_NONEADDR				0x000c      //设备地址不对
-#define ERR_ADDRCROSS				0x000d			//添加设备的时候地址超出了地址域
+#define ERR_FLASHADDR				0x000b			//FLASH操作时地址出错
+#define ERR_FLASHWRITE			0x000c			//FLASH写入时包出错
+#define ERR_OFFLINE         0x000d   		//设备不在线
+#define ERR_NONEADDR				0x000e      //设备地址不对
+#define ERR_ADDRCROSS				0x000f			//添加设备的时候地址超出了地址域
 
 
 

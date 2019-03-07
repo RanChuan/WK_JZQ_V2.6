@@ -50,6 +50,11 @@ void my_w5500 (void * t)
 	cJSON_InitHooks(&a);
 
 	
+	void sys_test (void);
+	sys_test();
+	
+	
+	
 	while(1)
 	{
 		delay_ms(100);
@@ -67,6 +72,27 @@ void my_w5500 (void * t)
 		
 	}
 }
+
+
+
+
+
+void sys_test (void)
+{
+	int test=0;
+	u32 flashaddr=0;
+	u8 *buff;
+	buff=mymalloc(2048);
+	while (test)
+	{
+		SPI_Flash_Read (buff,flashaddr,2048);
+	}
+	myfree(buff);
+}
+
+
+
+
 
 
 

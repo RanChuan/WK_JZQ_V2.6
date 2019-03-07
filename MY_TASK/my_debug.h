@@ -56,7 +56,6 @@ extern u32 memsize    ;							//内存总大小
 extern u8 DBG_INTER_STATE;
 
 
-extern u16 SPI_FLASH_TYPE;
 
 extern u16 Get_MyAddr(void);
 
@@ -69,7 +68,7 @@ extern u8 DBG_COPY_TO_S1CK;
 //调试函数调用入口
 void my_debug (void);
 
-void dbg_Interpreter(void);
+void dbg_Interpreter(u8 *);
 
 	//板子信息
 void dbg_info (void);
@@ -103,7 +102,11 @@ void dbg_task (u8 *buff);
 void dbg_ping (u8 *buff);
 
 
-/**********一些辅助函数****************/
+/**********执行指令****************/
+
+
+void	cmd_byudp (u8 *);
+
 
 
 

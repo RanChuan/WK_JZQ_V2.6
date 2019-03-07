@@ -55,3 +55,19 @@ u8 getnumfstr(u8 *out,u8 *strin,u8 point,u8 length)
 
 
 
+
+//¸´ÖÆÊý¾Ý
+void copy_data (u8 *from,u8 *to,u16 length)
+{
+	while(length--)
+	{
+		*to++=*from++;
+	}
+}
+
+
+
+
+
+
+
