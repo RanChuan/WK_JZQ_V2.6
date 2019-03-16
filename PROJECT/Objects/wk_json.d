@@ -61,5 +61,5 @@
 .\objects\wk_json.o: ..\HARDWARE\W5500\w5500.h
 .\objects\wk_json.o: ..\SOFTWARE\ENTERNET\enternet.h
 .\objects\wk_json.o: ..\MY_TASK\my_messeg.h
-.\objects\wk_json.o: ..\MY_TASK\my_debug.h
+.\objects\wk_json.o: ..\SOFTWARE\DEBUG\debug.h
 .\objects\wk_json.o: ..\SOFTWARE\WK_JSON\wk_json.h

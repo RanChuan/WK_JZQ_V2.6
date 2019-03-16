@@ -2,7 +2,7 @@
 #include "w5500.h"
 #include "enternet.h"
 #include "my_messeg.h"
-#include "my_debug.h"
+#include "debug.h"
 #include "wk_json.h"
 
 

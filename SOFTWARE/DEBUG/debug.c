@@ -8,7 +8,7 @@
 #include "my_idle.h"
 #include "wk_json.h"
 #include "cmd.h"
-#include "my_debug.h"
+#include "debug.h"
 
 static u16 NativeDbgPort=12;
 static u8 DBG_IAP=0;
@@ -605,6 +605,42 @@ void dbg_set (u8 *chars)
 			sprintf (txtbuff,"已设置集中器的调试端口为：%d 请连接到新端口通信\r\n",port);
 			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
 		}
+		else if (samestr((u8*)"nativeid ",chars))
+		{
+			u16 id=0;
+			id=str2num(chars+9);
+			Set_MyAddr (id);
+			Save_Config();
+			sprintf (txtbuff,"已设置集中器的设备地址为：%d\r\n",id);
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
+		else if (samestr((u8*)"adddev ",chars))
+		{
+			void dbg_set_adddev (u8 *chars);
+			dbg_set_adddev(chars+7);
+		}
+		else if (samestr((u8*)"deldev ",chars))
+		{
+			u16 id=0;
+			id=str2num(chars+7);
+			if (delDevAddr(id)==0)
+			{
+				Save_Config();
+				sprintf (txtbuff,"已移除地址为 %d 的设备\r\n",id);
+			}
+			else
+			{
+				sprintf (txtbuff,"移除地址为 %d 的设备失败，可能是不存在这样的设备\r\n",id);
+			}
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
+		else if (samestr((u8*)"cleardev",chars))
+		{
+			clearDev();
+			Save_Config();
+			sprintf (txtbuff,"已移除所有配置的设备\r\n");
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
 		else
 		{
 			ptxt="暂不支持的设置项参数，输入 \"set\" 查看支持的参数\r\n";
@@ -636,9 +672,144 @@ void dbg_set (u8 *chars)
 		
 		ptxt="\t输入\"set dbgport [端口]\"修改集中器的调试端口\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		
+		ptxt="\t输入\"set nativeid [集中器地址]\"设置集中器的地址\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
+		ptxt="\t输入\"set adddev [设备类型] [设备地址]\"添加集中器设备\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		
+		ptxt="\t输入\"set deldev [设备地址]\"移除集中器设备\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
+		ptxt="\t输入\"set cleardev\"移除集中器中配置的所有设备\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	}
 	myfree(txtbuff);
 }
+
+
+
+void dbg_set_adddev (u8 *chars)
+{
+	char *txtbuff=mymalloc(512);
+	char *ptxt=0;
+	if (samestr((u8*)"cjq ",chars))
+	{
+		u16 id=0;
+		id=str2num(chars+4);
+		if (addDevAddr (devTypeCjq, id)==0)
+		{
+			Save_Config();
+			sprintf (txtbuff,"已添加地址为：%d 的采集器\r\n",id);
+		}
+		else
+		{
+			sprintf (txtbuff,"添加设备失败，可能是设备地址被占用\r\n");
+		}
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+	}
+	else if (samestr((u8*)"kt ",chars))
+	{
+		u16 id=0;
+		id=str2num(chars+3);
+		if (addDevAddr (devTypeKt, id)==0)
+		{
+			Save_Config();
+			sprintf (txtbuff,"已添加地址为：%d 的空调控制器\r\n",id);
+		}
+		else
+		{
+			sprintf (txtbuff,"添加设备失败，可能是设备地址被占用\r\n");
+		}
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+	}
+	else if (samestr((u8*)"csj ",chars))
+	{
+		u16 id=0;
+		id=str2num(chars+4);
+		if (addDevAddr (devTypeCsj, id)==0)
+		{
+			Save_Config();
+			sprintf (txtbuff,"已添加地址为：%d 的除湿机控制器\r\n",id);
+		}
+		else
+		{
+			sprintf (txtbuff,"添加设备失败，可能是设备地址被占用\r\n");
+		}
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+	}
+	else if (samestr((u8*)"jhq ",chars))
+	{
+		u16 id=0;
+		id=str2num(chars+4);
+		if (addDevAddr (devTypeJhq, id)==0)
+		{
+			Save_Config();
+			sprintf (txtbuff,"已添加地址为：%d 的净化器\r\n",id);
+		}
+		else
+		{
+			sprintf (txtbuff,"添加设备失败，可能是设备地址被占用\r\n");
+		}
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+	}
+	else if (samestr((u8*)"jsj ",chars))
+	{
+		u16 id=0;
+		id=str2num(chars+4);
+		if (addDevAddr (devTypeJsj, id)==0)
+		{
+			Save_Config();
+			sprintf (txtbuff,"已添加地址为：%d 的加湿机\r\n",id);
+		}
+		else
+		{
+			sprintf (txtbuff,"添加设备失败，可能是设备地址被占用\r\n");
+		}
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+	}
+	else if (samestr((u8*)"ytj ",chars))
+	{
+		u16 id=0;
+		id=str2num(chars+4);
+		if (addDevAddr (devTypeKt, id)==0)
+		{
+			Save_Config();
+			sprintf (txtbuff,"已添加地址为：%d 的一体机控制器\r\n",id);
+		}
+		else
+		{
+			sprintf (txtbuff,"添加设备失败，可能是设备地址被占用\r\n");
+		}
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+	}
+	else
+	{
+		ptxt="不支持的设备类型，本机支持的设备类型是：\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		
+		ptxt="\t采集器：cjq\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		ptxt="\t空调控制器：kt\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		ptxt="\t除湿机：csj\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		ptxt="\t净化器：jhq\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		ptxt="\t加湿机：jsj\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		ptxt="\t一体机：ytj\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+	}
+	myfree(txtbuff);
+}
+
+
+
+
+
+
 
 
 //专门给cmd命令交互封装的函数

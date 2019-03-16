@@ -63,5 +63,5 @@
 .\objects\my_w5500.o: ..\SOFTWARE\DHCP\dhcp.h
 .\objects\my_w5500.o: ..\MY_TASK\my_messeg.h
 .\objects\my_w5500.o: ..\SOFTWARE\WK_JSON\wk_json.h
-.\objects\my_w5500.o: ..\MY_TASK\my_debug.h
+.\objects\my_w5500.o: ..\SOFTWARE\DEBUG\debug.h
 .\objects\my_w5500.o: ..\MY_TASK\my_w5500.h

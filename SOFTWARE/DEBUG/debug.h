@@ -1,7 +1,7 @@
 
 
-#ifndef __MY_DEBUG_H
-#define __MY_DEBUG_H
+#ifndef __DEBUG_H
+#define __DEBUG_H
 
 
 #ifdef __cplusplus

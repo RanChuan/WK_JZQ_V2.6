@@ -4,7 +4,7 @@
 #include "dhcp.h"
 #include "my_messeg.h"
 #include "wk_json.h"
-#include "my_debug.h"
+#include "debug.h"
 #include "my_w5500.h"
 
 

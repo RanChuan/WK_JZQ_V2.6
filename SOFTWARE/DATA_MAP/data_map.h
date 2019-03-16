@@ -39,6 +39,20 @@ void Load_LCD(void);
 
 
 
+enum {
+	devTypeJzq=0,
+	devTypeCjq=1,
+	devTypeKt=2,
+	devTypeCsj=3,
+	devTypeJhq=4,
+	devTypeJsj=5,
+	devTypeYtj=6,
+};
+
+
+
+
+
 /****************************************************************
 *******************具体操作函数
 *****************************************************************/
@@ -109,7 +123,14 @@ u8 setServerPort (u16 port );
 //设置网关IP地址
 u8 setGatewayIP (u8 *ip);
 
+//添加设备0,成功，1，失败
+u8 addDevAddr ( u8 dev,u16 addr );
 
+//移除设备，0成功，1失败
+u8 delDevAddr (u16 addr);
+
+//清除所有配置的设备
+void clearDev (void);
 
 
 //------------------------供外部调用的函数End---------------------------
