@@ -45,7 +45,7 @@ void Load_Config(void)
 {
 	u16 i=0;
 	STMFLASH_Read(FLASH_CFG_ADDR,EN_CONFIG,CONFIG_DATA_NUM);
-	for (i=0;i<CONFIG_DATA_NUM;i++)
+	for (i=0;i<100;i++)
 	{
 		if (EN_CONFIG[i]==0xffff) EN_CONFIG[i]=0;
 		if (i&1) {EN_CONFIG[i]&=0x00ff;//初始化之后，把设备状态为0，2018.8.18
@@ -105,6 +105,19 @@ static u8 EN_DATA_[25]={0};
 
 
 
+/***************************************************************
+
+		config配置信息存储结构：
+			EN_CONFIG[0]~EN_CONFIG[99] 设备配置信息
+			EN_CONFIG[CONFIG_DATA_NUM-34]	自动获取IP地址开关
+			EN_CONFIG[CONFIG_DATA_NUM-33]~EN_CONFIG[CONFIG_DATA_NUM-24]	本机名称，18个英语字符
+			EN_CONFIG[CONFIG_DATA_NUM-23]	自动控制超调量
+			EN_CONFIG[CONFIG_DATA_NUM-22]	自动控制频率
+			EN_CONFIG[CONFIG_DATA_NUM-21]	无线信道
+			EN_CONFIG[CONFIG_DATA_NUM-20]~EN_CONFIG[CONFIG_DATA_NUM-1]	IP地址相关
+
+
+***************************************************************/
 
 //找出设备数量
 void Updata_DeviceNum (void)
@@ -431,6 +444,85 @@ u8 *dbg_getdevname(u8 devtype)
 	else
 		return devicename[7].name;
 }
+
+
+//获取自动控制频率，单位秒
+u16 getAutoCtrlFrequency (void)
+{
+	return EN_CONFIG[CONFIG_DATA_NUM-22];
+}
+
+
+//设置自动控制频率，单位秒,0,成功，1，失败
+u16 setAutoCtrlFrequency (u16 fre)
+{
+	EN_CONFIG[CONFIG_DATA_NUM-22]=fre;
+	return 0;
+}
+
+
+u16 getAutoCtrlAmount (void)
+{
+	return EN_CONFIG[CONFIG_DATA_NUM-23];
+}
+
+
+u16 setAutoCtrlAmount (u16 amount )
+{
+	if (amount<5)
+	{
+		EN_CONFIG[CONFIG_DATA_NUM-23]=amount;
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+
+}
+
+u16 setMyName (char *name)
+{
+	u8 strlenth=0;
+	char *dec;
+	strlenth=strlen (name);
+	if (strlenth>18)
+	{
+		return 1;//字符太长，设置失败
+	}
+	else
+	{
+		dec=(char *)&EN_CONFIG[CONFIG_DATA_NUM-33];
+		mymemcpy (dec,name,strlenth+1);
+		return 0;
+	}
+}
+
+char *getMyName (void)
+{
+	return (char *)&EN_CONFIG[CONFIG_DATA_NUM-33];
+}
+
+
+
+u16 getDhcpState (void)
+{
+	return EN_CONFIG[CONFIG_DATA_NUM-34]	;
+}
+
+u16 setDhcpState (u16 new_state)
+{
+	if (new_state)
+	{
+		EN_CONFIG[CONFIG_DATA_NUM-34]=1;
+	}
+	else
+	{
+		EN_CONFIG[CONFIG_DATA_NUM-34]=0;
+	}
+	return 0;
+}
+
 
 
 //------------------------供外部调用的函数--------------------------------

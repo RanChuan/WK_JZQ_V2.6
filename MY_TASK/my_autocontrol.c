@@ -19,7 +19,7 @@
 
 
 //超调值
-#define OVERSHOOT_RANGE 3
+#define OVERSHOOT_RANGE getAutoCtrlAmount()
 //1使用旧版，0使用新版，旧版串口屏设置是以1mg/m3为单位，新版以0.1mg/m3为单位
 #define __USE_OLD   1
 
@@ -37,7 +37,7 @@ void my_autocontrol (void * t)
 	delay_ms(3000);//系统运行3秒钟之后开始执行
 	while (1)
 	{
-		delay_ms(30000);//每30秒执行一次自动判断
+		delay_ms(getAutoCtrlFrequency()*1000+1);//每30秒执行一次自动判断
 		{
 			if (cj_data[1]!=0xff) continue;
 			now_temp=cj_data[17]+cj_data[18]/10.;//传入小数，2018.11.19

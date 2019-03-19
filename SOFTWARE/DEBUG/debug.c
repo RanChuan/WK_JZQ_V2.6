@@ -10,6 +10,13 @@
 #include "cmd.h"
 #include "debug.h"
 
+
+
+
+
+
+
+
 static u16 NativeDbgPort=12;
 static u8 DBG_IAP=0;
 void my_debug (void)
@@ -156,7 +163,7 @@ void dbg_info (void)
 	char *txtbuff=mymalloc(512);
 	ptxt="温控集中器：";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-  sprintf(txtbuff,"%.6s-%02X%02X%02X\r\n","WK_JZQ",Phy_Addr[3],Phy_Addr[4],Phy_Addr[5]);
+  sprintf(txtbuff,"%.18s\r\n",getMyName());
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 	
 	ptxt="本程序适配电路板版本：2018-10-22\r\n";
@@ -186,7 +193,16 @@ void dbg_info (void)
 	sprintf (txtbuff,"无线信道：%d\r\n",Get_MyChanel());
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 
-ptxt="文件系统状态：";
+	sprintf (txtbuff,"自动控制频率：%d 秒\r\n",getAutoCtrlFrequency());
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+
+	sprintf (txtbuff,"自动控制超调量：%d\r\n",getAutoCtrlAmount());
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+
+	sprintf(txtbuff,"集中器已运行 %d 秒\r\n",getSysRunTime());
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+	
+	ptxt="文件系统状态：";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	if (DBG_FATS==0) ptxt="不支持文件系统\r\n"; else if (DBG_FATS==1) ptxt="没有SD卡\r\n"; 
 	else if (DBG_FATS==2) ptxt="SD卡挂载失败\r\n"; else if (DBG_FATS==3) ptxt="支持文件系统\r\n";
@@ -204,9 +220,6 @@ ptxt="文件系统状态：";
 
 	sprintf (txtbuff,"系统内存使用情况：%dKB总共、%dKB已使用、%dKB剩余、使用了%d%%\r\n",
 		memsize/1024,memsize*mem_perused()/100/1024,memsize*(100-mem_perused())/100/1024,mem_perused());
-	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
-	
-	sprintf(txtbuff,"集中器已运行 %d 秒\r\n",getSysRunTime());
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 	
 	sprintf(txtbuff,"程序位置：-- %#X -- \r\n",SCB->VTOR);
@@ -614,10 +627,10 @@ void dbg_set (u8 *chars)
 			sprintf (txtbuff,"已设置集中器的设备地址为：%d\r\n",id);
 			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
 		}
-		else if (samestr((u8*)"adddev ",chars))
+		else if (samestr((u8*)"adddev",chars))
 		{
 			void dbg_set_adddev (u8 *chars);
-			dbg_set_adddev(chars+7);
+			dbg_set_adddev(chars+6);
 		}
 		else if (samestr((u8*)"deldev ",chars))
 		{
@@ -639,6 +652,49 @@ void dbg_set (u8 *chars)
 			clearDev();
 			Save_Config();
 			sprintf (txtbuff,"已移除所有配置的设备\r\n");
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
+		else if (samestr((u8*)"ctrlfrequency ",chars))
+		{
+			u16 frequency=0;
+			frequency=str2num(chars+14);
+			if (setAutoCtrlFrequency(frequency)==0)
+			{
+				Save_Config();
+				sprintf (txtbuff,"已设置自动控制的频率为 %d 秒\r\n",frequency);
+			}
+			else
+			{
+				sprintf (txtbuff,"自动控制的频率设置失败\r\n");
+			}
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
+		else if (samestr((u8*)"ctrlamount ",chars))
+		{
+			u16 amount=0;
+			amount=str2num(chars+11);
+			if (setAutoCtrlAmount(amount)==0)
+			{
+				Save_Config();
+				sprintf (txtbuff,"已设置自动控制的超调量为 %d \r\n",amount);
+			}
+			else
+			{
+				sprintf (txtbuff,"自动控制超调量设置失败，可能是超调量值太大\r\n");
+			}
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
+		else if (samestr((u8*)"name ",chars))
+		{
+			if (setMyName((char *)chars+5)==0)
+			{
+				Save_Config();
+				sprintf (txtbuff,"已设置自动控制的名称为 %s\r\n",chars+5);
+			}
+			else
+			{
+				sprintf (txtbuff,"设置集中器的名称失败，可能是名称太长\r\n");
+			}
 			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
 		}
 		else
@@ -684,6 +740,15 @@ void dbg_set (u8 *chars)
 
 		ptxt="\t输入\"set cleardev\"移除集中器中配置的所有设备\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
+		ptxt="\t输入\"set ctrlfrequency [频率]\"设置集中器自动控制的频率，单位秒\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		
+		ptxt="\t输入\"set ctrlamount [超调量]\"设置集中器自动控制的超调量\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		
+		ptxt="\t输入\"set name [名称]\"设置集中器名称\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	}
 	myfree(txtbuff);
 }
@@ -694,6 +759,8 @@ void dbg_set_adddev (u8 *chars)
 {
 	char *txtbuff=mymalloc(512);
 	char *ptxt=0;
+	if (*chars==' ')
+		chars++;
 	if (samestr((u8*)"cjq ",chars))
 	{
 		u16 id=0;
@@ -789,17 +856,17 @@ void dbg_set_adddev (u8 *chars)
 		ptxt="不支持的设备类型，本机支持的设备类型是：\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 		
-		ptxt="\t采集器：cjq\r\n";
+		ptxt="\t采集器：\tcjq\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-		ptxt="\t空调控制器：kt\r\n";
+		ptxt="\t空调控制器：\tkt\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-		ptxt="\t除湿机：csj\r\n";
+		ptxt="\t除湿机：\tcsj\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-		ptxt="\t净化器：jhq\r\n";
+		ptxt="\t净化器：\tjhq\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-		ptxt="\t加湿机：jsj\r\n";
+		ptxt="\t加湿机：\tjsj\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-		ptxt="\t一体机：ytj\r\n";
+		ptxt="\t一体机：\tytj\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	}
 	myfree(txtbuff);

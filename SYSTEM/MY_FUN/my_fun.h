@@ -11,6 +11,10 @@
 #define ntohs(s) __REV16(s)					//16位大小端转换
 
 
+//单片机的SN码
+#define MCU_SN ((u8*)0x1FFFF7E8)
+		
+		
 
 //如果函数指针不为0，调用该函数
 #define BX_VOID_FUN(fun) do{\

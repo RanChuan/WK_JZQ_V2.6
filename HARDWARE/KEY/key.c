@@ -21,16 +21,6 @@
 
 
 
-//1，用外部中断，0使用定时器扫描
-#define USE_EXIT 0
-
-//按键引脚定义
-#define KEY1  PCin(7)
-#define KEY2  PAin(0)
-#define KEY3  PCin(8)
-#define KEY4  PBin(9)
-#define KEY5  PCin(9)
-#define KEY6  PBin(8)
 
 
 //按键数组，支持多个按键同时按下
@@ -38,98 +28,18 @@ static u8 KEYS[6];
 
 void Key_Init (void)
 {
-#if USE_EXIT==1
-	EXTI_InitTypeDef EXTI_InitStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
-#endif
 
 	GPIO_InitTypeDef GPIO_InitStructure;
-	//初始化KEY0-->GPIOA.13,KEY1-->GPIOA.15  上拉输入
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);//使能PORTA,PORTE时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);  
-  
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3;  
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;  
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;  
 	
+	//初始化时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3;  
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;  
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;  
 	GPIO_Init(GPIOC, &GPIO_InitStructure); //新板子不使用以前的按键灯光2018.11.5，这4个IO用来做触摸按键
 
-RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);	//使能复用功能时钟
-#if USE_EXIT==1	
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource7);//KEY1
-	EXTI_InitStructure.EXTI_Line=EXTI_Line7;	
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);	 	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;			//使能按键WK_UP所在的外部中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;					//子优先级3
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
-	NVIC_Init(&NVIC_InitStructure); 
-	
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource0);//KEY2
-	EXTI_InitStructure.EXTI_Line=EXTI_Line0;	
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);	 	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;			//使能按键WK_UP所在的外部中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;					//子优先级3
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
-	NVIC_Init(&NVIC_InitStructure); 
-
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource8);//KEY3
-	EXTI_InitStructure.EXTI_Line=EXTI_Line8;	
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);	 	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;			//使能按键WK_UP所在的外部中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;					//子优先级3
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
-	NVIC_Init(&NVIC_InitStructure); 
-
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource9);//KEY4
-	EXTI_InitStructure.EXTI_Line=EXTI_Line9;	
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);	 	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;			//使能按键WK_UP所在的外部中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;					//子优先级3
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
-	NVIC_Init(&NVIC_InitStructure); 
-
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource9);//KEY5
-	EXTI_InitStructure.EXTI_Line=EXTI_Line9;	
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);	 	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;			//使能按键WK_UP所在的外部中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;					//子优先级3
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
-	NVIC_Init(&NVIC_InitStructure); 
-
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource8);//KEY6
-	EXTI_InitStructure.EXTI_Line=EXTI_Line8;	
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);	 	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;			//使能按键WK_UP所在的外部中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;					//子优先级3
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
-	NVIC_Init(&NVIC_InitStructure); 
-#else
 	addTimerIrq10ms(KEY_IRQHandler);//在定时器中添加中断服务函数
-#endif
 }
 
 
@@ -144,48 +54,9 @@ u8 Get_Key(u8 keynum)
 }
 
 
+//按键有效
+#define KEY_Effective (KEYS[0]||KEYS[1]||KEYS[2]||KEYS[3]||KEYS[4]||KEYS[5])
 
-
-
-//中断服务函数														
-#if USE_EXIT==1
-
-void EXTI9_5_IRQHandler(void)
-{
-	if(EXTI_GetITStatus(EXTI_Line7)!=RESET)//KEY1
-	{
-		KEYS[0]=PRESS_SHORT;
-		EXTI_ClearFlag(EXTI_Line7);
-		
-	}
-
-	if(EXTI_GetITStatus(EXTI_Line8)!=RESET)//KEY3,KEY6
-	{
-		KEYS[2]=PRESS_SHORT;
-		KEYS[5]=PRESS_SHORT;
-		EXTI_ClearFlag(EXTI_Line8);
-		
-	}
-	if(EXTI_GetITStatus(EXTI_Line9)!=RESET)//KEY4,KEY5
-	{
-		KEYS[3]=PRESS_SHORT;
-		KEYS[4]=PRESS_SHORT;
-		EXTI_ClearFlag(EXTI_Line9);
-		
-	}
-	
-}
- 
-void EXTI0_IRQHandler(void)
-{
-	if(EXTI_GetITStatus(EXTI_Line0)!=RESET)//KEY2
-	{
-		KEYS[0]=PRESS_SHORT;
-		EXTI_ClearFlag(EXTI_Line0);
-		
-	}
-}
-#else
 
 
 //按键中断服务程序
@@ -333,12 +204,11 @@ void KEY_IRQHandler(void)   //
 			key_time[5]=0;
 			key_valid[5]=0;//按键设为有效
 		}
-		if (keys<=5)//有按键按下时唤醒处理任务
+		if (KEY_Effective)//有按键按下时唤醒处理任务
 			TaskIntSendMsg(1,1);
 
 }
 
-#endif 
 
 
 

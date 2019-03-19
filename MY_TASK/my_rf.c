@@ -218,7 +218,24 @@ void load_test_cfg(void)
 		Save_Config();
 	}
 	
-
+	//没有本机名称
+	if (*getMyName()==0)
+	{
+		char *txtbuff=mymalloc(512);
+		sprintf(txtbuff,"%.6s-%02X%02X%02X","WK_JZQ",MCU_SN[9],MCU_SN[10],MCU_SN[11]);
+		setMyName (txtbuff);
+		myfree (txtbuff);
+	}
+	//默认一个超调量
+	if (getAutoCtrlAmount()==0)
+	{
+		setAutoCtrlAmount(3);
+	}
+	//默认一个控制频率
+	if (getAutoCtrlFrequency()==0)
+	{
+		setAutoCtrlFrequency(30);
+	}
 }
 
 
@@ -742,7 +759,7 @@ void my_rf_deal (void * t)
 						send_messeg(WK_MESSEG,send);//发送给网口
 				}
 			}
-			delay_ms(1000);
+			delay_ms(5000);
 		}
 	}
 	

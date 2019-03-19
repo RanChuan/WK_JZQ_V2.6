@@ -133,6 +133,32 @@ u8 delDevAddr (u16 addr);
 void clearDev (void);
 
 
+
+//获取自动控制频率，单位秒
+u16 getAutoCtrlFrequency (void);
+
+//设置自动控制频率，单位秒,0,成功，1，失败
+u16 setAutoCtrlFrequency (u16 fre);
+
+//取得超调量
+u16 getAutoCtrlAmount (void);
+
+//设置超调量,0,成功，1，失败
+u16 setAutoCtrlAmount (u16 amount );
+
+//设置本机名称
+u16 setMyName (char *name);
+
+//获取本机名称
+char *getMyName (void);
+
+//获取DHCP状态
+u16 getDhcpState (void);
+
+//设置DHCP状态,0,成功
+u16 setDhcpState (u16 new_state);
+
+
 //------------------------供外部调用的函数End---------------------------
 
 //根据类型获取名称

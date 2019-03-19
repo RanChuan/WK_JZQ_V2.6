@@ -39,6 +39,11 @@ u8 DBG_INTER_STATE=0;
 
 
 
+
+
+
+
+
 void my_w5500 (void * t)
 {
 	cJSON_Hooks a;

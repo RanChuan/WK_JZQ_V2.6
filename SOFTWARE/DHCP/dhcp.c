@@ -85,11 +85,13 @@ void dhcp_discover(dhcp_pack * discover)
   discover->Options[i++] = hostName;
 	
   // set the host name
-	char *host_name=mymalloc(64);
-  sprintf((char*)host_name,"%.6s-%02X%02X%02X","WK_JZQ",Phy_Addr[3],Phy_Addr[4],Phy_Addr[5]);
+	//char *host_name=mymalloc(64);
+	// sprintf((char*)host_name,"%.6s-%02X%02X%02X","WK_JZQ",Phy_Addr[3],Phy_Addr[4],Phy_Addr[5]);
+
+	char *host_name=getMyName();
   discover->Options[i++] = (u8)strlen((char*)host_name);
 	strcpy((char*)(&(discover->Options[i])),(char*)host_name);
-	myfree(host_name);
+	//myfree(host_name);
   
   i+=(u16)strlen((char*)host_name);	
  
@@ -218,11 +220,12 @@ u8 dhcp_request(dhcp_pack * discover,dhcp_pack * recvdata)
   discover->Options[i++] = hostName;
 	
   // set the host name
-	char *host_name=mymalloc(64);
-  sprintf((char*)host_name,"%.6s-%02X%02X%02X","WK_JZQ",Phy_Addr[3],Phy_Addr[4],Phy_Addr[5]);
+	//char *host_name=mymalloc(64);
+  //sprintf((char*)host_name,"%.6s-%02X%02X%02X","WK_JZQ",Phy_Addr[3],Phy_Addr[4],Phy_Addr[5]);
+	char *host_name=getMyName();
   discover->Options[i++] = (u8)strlen((char*)host_name);
 	strcpy((char*)(&(discover->Options[i])),(char*)host_name);
-	myfree(host_name);
+	//myfree(host_name);
   
   i+=(u16)strlen((char*)host_name);	
  
