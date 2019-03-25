@@ -100,6 +100,7 @@ void dhcp_discover(dhcp_pack * discover)
   discover->Options[i++] = subnetMask;
   discover->Options[i++] = routersOnSubnet;
   discover->Options[i++] = dns;
+  discover->Options[i++] = ntpServers;
   discover->Options[i++] = domainName;
   discover->Options[i++] = dhcpT1value;
   discover->Options[i++] = dhcpT2value;
@@ -179,6 +180,16 @@ u8 dhcp_request(dhcp_pack * discover,dhcp_pack * recvdata)
 		options=nest_Options(options);
 	}
 
+	options=recvdata->Options;
+	while(options)
+	{
+		if (options[0]==ntpServers)
+		{
+			mymemcpy(NTP_SERVER,&options[2],4);//获取NTP服务器ip
+			break;
+		}
+		options=nest_Options(options);
+	}
 
 	
 	u16 i=0;
@@ -234,6 +245,7 @@ u8 dhcp_request(dhcp_pack * discover,dhcp_pack * recvdata)
   discover->Options[i++] = subnetMask;
   discover->Options[i++] = routersOnSubnet;
   discover->Options[i++] = dns;
+  discover->Options[i++] = ntpServers;
   discover->Options[i++] = domainName;
   discover->Options[i++] = dhcpT1value;
   discover->Options[i++] = dhcpT2value;

@@ -37,6 +37,7 @@
 .\objects\os_msg.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\os_msg.o: ..\SYSTEM\SYS\sys.h
 .\objects\os_msg.o: ..\SYSTEM\DELAY\delay.h
+.\objects\os_msg.o: ..\SYSTEM\RTC\rtc.h
 .\objects\os_msg.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\os_msg.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\os_msg.o: ..\HARDWARE\STMFLASH\stmflash.h

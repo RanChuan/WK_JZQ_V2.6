@@ -45,9 +45,12 @@ void Load_Config(void)
 {
 	u16 i=0;
 	STMFLASH_Read(FLASH_CFG_ADDR,EN_CONFIG,CONFIG_DATA_NUM);
-	for (i=0;i<100;i++)
+	for (i=0;i<CONFIG_DATA_NUM;i++)
 	{
 		if (EN_CONFIG[i]==0xffff) EN_CONFIG[i]=0;
+	}
+	for (i=0;i<100;i++)
+	{
 		if (i&1) {EN_CONFIG[i]&=0x00ff;//初始化之后，把设备状态为0，2018.8.18
 			if (EN_CONFIG[i]&0x00ff) EN_CONFIG[i]|=DEVICEOFFLINE;//初始化为离线状态，2018.8.22
 		}
@@ -109,6 +112,7 @@ static u8 EN_DATA_[25]={0};
 
 		config配置信息存储结构：
 			EN_CONFIG[0]~EN_CONFIG[99] 设备配置信息
+			EN_CONFIG[CONFIG_DATA_NUM-35]	自动控制报警容差值
 			EN_CONFIG[CONFIG_DATA_NUM-34]	自动获取IP地址开关
 			EN_CONFIG[CONFIG_DATA_NUM-33]~EN_CONFIG[CONFIG_DATA_NUM-24]	本机名称，18个英语字符
 			EN_CONFIG[CONFIG_DATA_NUM-23]	自动控制超调量
@@ -522,6 +526,27 @@ u16 setDhcpState (u16 new_state)
 	}
 	return 0;
 }
+
+
+u16 getWarnTolerance (void)
+{
+	return EN_CONFIG[CONFIG_DATA_NUM-35];//	自动控制报警容差值
+}
+
+//设置容差值，0成功，1失败
+u16 setWarnTolerance (u16 t)
+{
+	if (t>5)
+	{
+		return 1;
+	}
+	else
+	{
+		EN_CONFIG[CONFIG_DATA_NUM-35]=t;
+		return 0;
+	}
+}
+
 
 
 

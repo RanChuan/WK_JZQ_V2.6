@@ -37,6 +37,7 @@
 .\objects\beep.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\beep.o: ..\SYSTEM\SYS\sys.h
 .\objects\beep.o: ..\SYSTEM\DELAY\delay.h
+.\objects\beep.o: ..\SYSTEM\RTC\rtc.h
 .\objects\beep.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\beep.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\beep.o: ..\HARDWARE\STMFLASH\stmflash.h

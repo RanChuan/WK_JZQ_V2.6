@@ -37,6 +37,7 @@
 .\objects\enternet.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\enternet.o: ..\SYSTEM\SYS\sys.h
 .\objects\enternet.o: ..\SYSTEM\DELAY\delay.h
+.\objects\enternet.o: ..\SYSTEM\RTC\rtc.h
 .\objects\enternet.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\enternet.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\enternet.o: ..\HARDWARE\STMFLASH\stmflash.h

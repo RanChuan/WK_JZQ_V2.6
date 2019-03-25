@@ -1,4 +1,5 @@
 #include "includes.h"
+#include "iwdg.h"
 #include "timer.h"
 #include "beep.h"
 #include "file.h"
@@ -20,6 +21,8 @@ void SysPowerOn (void)
 	Sys_Init();
 	if (os_init()!=0) { Load_down();
 	}//不为0初始化失败，一般是文件系统失败
+	RTC_Init();
+	IWDG_Init(16000);
 	SPI_Flash_Init(); 
 //	u8 *buf=malloc(100);
 //	read_json(_T("0:/wk_config.json"),buf,10);

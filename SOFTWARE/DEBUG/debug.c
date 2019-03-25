@@ -4,6 +4,7 @@
 #include "enternet.h"
 #include "dns.h"
 #include "ping.h"
+#include "ntp.h"
 #include "baidu_iot.h"
 #include "my_idle.h"
 #include "wk_json.h"
@@ -122,6 +123,10 @@ void dbg_Interpreter(u8 *recvbuff)
 	{
 		dbg_ping(recvbuff+8+5); 
 	}
+	else if (samestr((u8*)"ntp",recvbuff+8))
+	{
+		dbg_ntp(recvbuff+8+3); 
+	}
 	else
 	{
 		dbg_err(1);
@@ -184,6 +189,9 @@ void dbg_info (void)
 	sprintf(txtbuff,"DNS服务器IP地址：%d.%d.%d.%d\r\n",DNS_SERVER[0],DNS_SERVER[1],DNS_SERVER[2],DNS_SERVER[3]);
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 
+	sprintf(txtbuff,"NTP服务器IP地址：%d.%d.%d.%d\r\n",NTP_SERVER[0],NTP_SERVER[1],NTP_SERVER[2],NTP_SERVER[3]);
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+
 	ptxt="网络连接状态：";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	if (DBG_INTER_STATE==0) ptxt="没有网络连接\r\n"; else if (DBG_INTER_STATE==1) ptxt="已连接上网关\r\n";
@@ -199,16 +207,16 @@ void dbg_info (void)
 	sprintf (txtbuff,"自动控制超调量：%d\r\n",getAutoCtrlAmount());
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 
+	sprintf (txtbuff,"温控报警容差值：%d\r\n",getWarnTolerance());
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+
 	sprintf(txtbuff,"集中器已运行 %d 秒\r\n",getSysRunTime());
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 	
-	ptxt="文件系统状态：";
-	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-	if (DBG_FATS==0) ptxt="不支持文件系统\r\n"; else if (DBG_FATS==1) ptxt="没有SD卡\r\n"; 
-	else if (DBG_FATS==2) ptxt="SD卡挂载失败\r\n"; else if (DBG_FATS==3) ptxt="支持文件系统\r\n";
-	else ptxt="未知状态\r\n";
-	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-
+	sprintf(txtbuff,"系统时间：-- %d年 - %d月 - %d日 -- %d : %d : %d -- \r\n",
+		RTC_GetTimeObj()->w_year,RTC_GetTimeObj()->w_month,RTC_GetTimeObj()->w_date,
+		RTC_GetTimeObj()->hour,RTC_GetTimeObj()->min,RTC_GetTimeObj()->sec);
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 
 	ptxt="外部FLASH：";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
@@ -216,7 +224,13 @@ void dbg_info (void)
 	else if (SPI_FLASH_TYPE==0XEF15) ptxt="4MB\r\n"; else if (SPI_FLASH_TYPE==0XEF16) ptxt="8MB\r\n";
 	else if (SPI_FLASH_TYPE==0XEF17) ptxt="16MB\r\n"; else ptxt="未知的类型\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-
+	
+	ptxt="文件系统状态：";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+	if (DBG_FATS==0) ptxt="不支持文件系统\r\n"; else if (DBG_FATS==1) ptxt="没有SD卡\r\n"; 
+	else if (DBG_FATS==2) ptxt="SD卡挂载失败\r\n"; else if (DBG_FATS==3) ptxt="支持文件系统\r\n";
+	else ptxt="未知状态\r\n";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 
 	sprintf (txtbuff,"系统内存使用情况：%dKB总共、%dKB已使用、%dKB剩余、使用了%d%%\r\n",
 		memsize/1024,memsize*mem_perused()/100/1024,memsize*(100-mem_perused())/100/1024,mem_perused());
@@ -349,6 +363,9 @@ void dbg_help(void)
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
 	ptxt="\t输入\"mqtt\"连接到百度云\r\n";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+	
+	ptxt="\t输入\"ntp\"获取网络时间\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
 	ptxt="\t输入\"oche on\"开启回显\r\n\t输入\"oche off\"关闭回显\r\n";
@@ -684,6 +701,21 @@ void dbg_set (u8 *chars)
 			}
 			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
 		}
+		else if (samestr((u8*)"warntolerance ",chars))
+		{
+			u16 amount=0;
+			amount=str2num(chars+14);
+			if (setWarnTolerance(amount)==0)
+			{
+				Save_Config();
+				sprintf (txtbuff,"已设置温控报警容差值为 %d \r\n",amount);
+			}
+			else
+			{
+				sprintf (txtbuff,"温控报警容差值设置失败，可能是值太大\r\n");
+			}
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen((const char *)txtbuff));
+		}
 		else if (samestr((u8*)"name ",chars))
 		{
 			if (setMyName((char *)chars+5)==0)
@@ -746,7 +778,10 @@ void dbg_set (u8 *chars)
 		
 		ptxt="\t输入\"set ctrlamount [超调量]\"设置集中器自动控制的超调量\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
-		
+
+		ptxt="\t输入\"set warntolerance [容差值]\"设置集中器温控报警容差值\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
 		ptxt="\t输入\"set name [名称]\"设置集中器名称\r\n";
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	}
@@ -873,8 +908,26 @@ void dbg_set_adddev (u8 *chars)
 }
 
 
-
-
+//通过ntp获取时间
+void dbg_ntp (u8 *buff)
+{
+	u32 time=0;
+	char *chars=mymalloc(128);
+	char *ptxt=0;
+	time=ntp_gettime(2,NTP_SERVER);
+	if (time!=0)
+	{
+		RTC_SetTimeBySec(time+8*3600);
+		sprintf (chars,"获取到的时间是：%d\r\n",time);
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)chars,strlen((const char *)chars));
+	}
+	else
+	{
+		ptxt="获取时间失败！\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+	}
+	myfree(chars);
+}
 
 
 

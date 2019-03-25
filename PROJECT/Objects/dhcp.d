@@ -37,6 +37,7 @@
 .\objects\dhcp.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\dhcp.o: ..\SYSTEM\SYS\sys.h
 .\objects\dhcp.o: ..\SYSTEM\DELAY\delay.h
+.\objects\dhcp.o: ..\SYSTEM\RTC\rtc.h
 .\objects\dhcp.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\dhcp.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\dhcp.o: ..\HARDWARE\STMFLASH\stmflash.h

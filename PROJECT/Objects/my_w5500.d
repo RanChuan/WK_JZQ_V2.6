@@ -37,6 +37,7 @@
 .\objects\my_w5500.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\my_w5500.o: ..\SYSTEM\SYS\sys.h
 .\objects\my_w5500.o: ..\SYSTEM\DELAY\delay.h
+.\objects\my_w5500.o: ..\SYSTEM\RTC\rtc.h
 .\objects\my_w5500.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\my_w5500.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\my_w5500.o: ..\HARDWARE\STMFLASH\stmflash.h
@@ -64,4 +65,6 @@
 .\objects\my_w5500.o: ..\MY_TASK\my_messeg.h
 .\objects\my_w5500.o: ..\SOFTWARE\WK_JSON\wk_json.h
 .\objects\my_w5500.o: ..\SOFTWARE\DEBUG\debug.h
+.\objects\my_w5500.o: ..\SOFTWARE\NTP\ntp.h
+.\objects\my_w5500.o: ..\SOFTWARE\POWER\power.h
 .\objects\my_w5500.o: ..\MY_TASK\my_w5500.h

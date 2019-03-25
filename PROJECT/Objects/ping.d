@@ -37,6 +37,7 @@
 .\objects\ping.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\ping.o: ..\SYSTEM\SYS\sys.h
 .\objects\ping.o: ..\SYSTEM\DELAY\delay.h
+.\objects\ping.o: ..\SYSTEM\RTC\rtc.h
 .\objects\ping.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\ping.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\ping.o: ..\HARDWARE\STMFLASH\stmflash.h

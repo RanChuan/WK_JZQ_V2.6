@@ -15,6 +15,8 @@ extern u8 Sub_Mask[4];
 extern u8 IP_Addr[4];
 extern u8 Gateway_IP[4];
 extern u8 DNS_SERVER[4];//DNS服务器IP地址
+extern u8 NTP_SERVER[4];
+
 //温控数据上传服务器地址
 extern u8 SERVER_IP[4];
 extern u16 SERVER_PORT;

@@ -37,6 +37,7 @@
 .\objects\my_idle.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\my_idle.o: ..\SYSTEM\SYS\sys.h
 .\objects\my_idle.o: ..\SYSTEM\DELAY\delay.h
+.\objects\my_idle.o: ..\SYSTEM\RTC\rtc.h
 .\objects\my_idle.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\my_idle.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\my_idle.o: ..\HARDWARE\STMFLASH\stmflash.h
@@ -58,4 +59,5 @@
 .\objects\my_idle.o: ..\SOFTWARE\JSON\cjson.h
 .\objects\my_idle.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\my_idle.o: ..\SOFTWARE\DATA_MAP\data_map.h
+.\objects\my_idle.o: ..\SYSTEM\IWDG\iwdg.h
 .\objects\my_idle.o: ..\MY_TASK\my_idle.h

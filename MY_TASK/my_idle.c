@@ -1,5 +1,6 @@
 
 #include "includes.h"
+#include "iwdg.h"
 #include "my_idle.h"
 
 
@@ -18,6 +19,7 @@ void idle_task (void *t)
 		for (i=0;i<TASK_MAX_NUM;i++)
 		{
 			OS_ENTER_CRITICAL();
+			IWDG_Feed();
 			if (getSysRunTime()- TCB_Table[i].LastTime>60*2)
 			{
 				if (TCB_Table[i].pTask)

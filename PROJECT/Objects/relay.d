@@ -37,6 +37,7 @@
 .\objects\relay.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\relay.o: ..\SYSTEM\SYS\sys.h
 .\objects\relay.o: ..\SYSTEM\DELAY\delay.h
+.\objects\relay.o: ..\SYSTEM\RTC\rtc.h
 .\objects\relay.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\relay.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\relay.o: ..\HARDWARE\STMFLASH\stmflash.h

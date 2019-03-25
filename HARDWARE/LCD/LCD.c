@@ -19,12 +19,21 @@ u8 LCD_FOCUS=TASK_MAX_NUM;
 
 #define MY_USART USART2
 #define USART_485_TX_EN		PBout(12)	//485模式控制.0,接收;1,发送.
+#define USART2_RX_BUFLEN  30
 
 //接收缓存区 	
-u8 RS485_RX_BUF[30];  	//接收缓冲,最大64个字节.
+static u8 USART2_RX_BUF[USART2_RX_BUFLEN];  	//接收缓冲,最大64个字节.
+
 //接收到的数据长度
-u8 RS485_RX_CNT=0;   		  
+static u8 USART2_RX_CNT=0;   		  
+
+//串口空闲标志位
+static u8 USART2_IDLE=1;
   
+	
+	
+	
+	
 void USART2_IRQHandler(void)
 {
 	u8 res;	    
@@ -32,11 +41,17 @@ void USART2_IRQHandler(void)
  	if(USART_GetITStatus(MY_USART, USART_IT_RXNE) != RESET) //接收到数据
 	{	  
 		res =USART_ReceiveData(MY_USART); 	//读取接收到的数据
-//		USART1->DR = res;
-		if(RS485_RX_CNT<100)
+		if ((USART2_RX_CNT==0)&&(USART2_IDLE==1))
 		{
-			RS485_RX_BUF[RS485_RX_CNT]=res;		//记录接收到的值
-			RS485_RX_CNT++;						//接收数据增加1 
+			USART2_IDLE=0;
+		}
+		if (USART2_IDLE==0)
+		{
+			if(USART2_RX_CNT<USART2_RX_BUFLEN)
+			{
+				USART2_RX_BUF[USART2_RX_CNT]=res;			//记录接收到的值
+				USART2_RX_CNT++;											//接收数据增加1 
+			}
 		}
 	}  											 
 	if(USART_GetITStatus(MY_USART, USART_IT_IDLE) != RESET)  //空闲中断
@@ -44,6 +59,7 @@ void USART2_IRQHandler(void)
 		res=MY_USART->SR;
 		res=MY_USART->DR;
 		res=0;
+		USART2_IDLE=1;
 		TaskIntSendMsg(LCD_FOCUS,1);//发送给焦点进程
 	}
 } 
@@ -118,33 +134,30 @@ void LCD_Send_Data(u8 *buf,u8 len)
 {
 	u8 t;
 	USART_485_TX_EN=1;			//设置为发送模式
-  	for(t=0;t<len;t++)		//循环发送数据
+	for(t=0;t<len;t++)		//循环发送数据
 	{		   
 		while(USART_GetFlagStatus(MY_USART, USART_FLAG_TC) == RESET);	  
 		USART_SendData(MY_USART,buf[t]);
 	}	 
- 
 	while(USART_GetFlagStatus(MY_USART, USART_FLAG_TC) == RESET);		
-	RS485_RX_CNT=0;	  
 	USART_485_TX_EN=0;				//设置为接收模式	
 }
+
+
+
 //RS485查询接收到的数据
 //buf:接收缓存首地址
 //len:读到的数据长度
 void LCD_Receive_Data(u8 *buf,u16 *len)
 {
-	u8 rxlen=RS485_RX_CNT;
+	u8 rxlen=USART2_RX_CNT;
 	u8 i=0;
-	*len=0;				//默认为0
-//	delay_ms(10);
-	if(rxlen==RS485_RX_CNT&&rxlen)//接收到了数据,且接收完成了
+	*len=USART2_RX_CNT;				//默认为0
+	if (USART2_IDLE==1)
 	{
-		for(i=0;i<rxlen;i++)
-		{
-			buf[i]=RS485_RX_BUF[i];	
-		}		
-		*len=RS485_RX_CNT;	//记录本次数据长度
-		RS485_RX_CNT=0;		//清零
+		mymemcpy (buf,USART2_RX_BUF,rxlen);
+		mymemset (USART2_RX_BUF,0,rxlen);
+		USART2_RX_CNT=0;
 	}
 }
 

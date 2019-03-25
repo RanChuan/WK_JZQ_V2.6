@@ -37,6 +37,7 @@
 .\objects\debug.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\debug.o: ..\SYSTEM\SYS\sys.h
 .\objects\debug.o: ..\SYSTEM\DELAY\delay.h
+.\objects\debug.o: ..\SYSTEM\RTC\rtc.h
 .\objects\debug.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\debug.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\debug.o: ..\HARDWARE\STMFLASH\stmflash.h
@@ -63,6 +64,7 @@
 .\objects\debug.o: ..\SOFTWARE\ENTERNET\enternet.h
 .\objects\debug.o: ..\SOFTWARE\DNS\dns.h
 .\objects\debug.o: ..\SOFTWARE\PING\ping.h
+.\objects\debug.o: ..\SOFTWARE\NTP\ntp.h
 .\objects\debug.o: ..\SOFTWARE\BAIDU_IOT\baidu_iot.h
 .\objects\debug.o: ..\MY_TASK\my_idle.h
 .\objects\debug.o: ..\SOFTWARE\WK_JSON\wk_json.h

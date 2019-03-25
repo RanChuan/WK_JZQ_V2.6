@@ -37,6 +37,7 @@
 .\objects\w5500.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\w5500.o: ..\SYSTEM\SYS\sys.h
 .\objects\w5500.o: ..\SYSTEM\DELAY\delay.h
+.\objects\w5500.o: ..\SYSTEM\RTC\rtc.h
 .\objects\w5500.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\w5500.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\w5500.o: ..\HARDWARE\STMFLASH\stmflash.h

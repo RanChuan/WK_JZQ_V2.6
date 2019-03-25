@@ -330,13 +330,27 @@ extern void Write_W5500_nByte(unsigned short reg, unsigned char *dat_ptr, unsign
 extern u8 Read_W5500_SOCK_1Byte(SOCKET s, unsigned short reg);
 extern u8 Read_W5500_1Byte(unsigned short reg);
 
+
+
+
 //获取指定端口的状态
 u8 getSocketState (u8 socket);
 
 //清除指定端口的状态
 void delSocketState (u8 socket,u8 states);
 
-//查询是否有指定状态，有则返回1,并清除，无返回0
+
+
+
+
+/*查询是否有指定状态，有则返回1,并清除，无返回0
+	state取值范围可以是：
+		IR_SEND_OK		消息发送成功
+		IR_TIMEOUT		操作超时
+		IR_RECV				有数据接收
+		IR_DISCON			连接断开
+		IR_CON				连接成功
+************************************************/
 u8 checkSocketState (u8 socket,u8 state);
 
 //查询网络状况

@@ -229,7 +229,11 @@ void load_test_cfg(void)
 	//默认一个超调量
 	if (getAutoCtrlAmount()==0)
 	{
-		setAutoCtrlAmount(3);
+		setAutoCtrlAmount(2);
+	}
+	if (getWarnTolerance()==0)
+	{
+		setWarnTolerance(2);
 	}
 	//默认一个控制频率
 	if (getAutoCtrlFrequency()==0)

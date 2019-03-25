@@ -158,6 +158,12 @@ u16 getDhcpState (void);
 //设置DHCP状态,0,成功
 u16 setDhcpState (u16 new_state);
 
+//设置容差值，0成功，1失败
+u16 setWarnTolerance (u16 t);
+
+u16 getWarnTolerance (void);
+
+
 
 //------------------------供外部调用的函数End---------------------------
 

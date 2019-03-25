@@ -22,7 +22,7 @@
  u8 IP_Addr[4]={0};
  u8 Gateway_IP[4]={0};
  u8 DNS_SERVER[4]={114,114,114,114};//DNS服务器IP地址
-
+ u8 NTP_SERVER[4]={202, 112, 10, 60};
 //温控数据上传服务器地址
 u8 SERVER_IP[4]={0};
 u16 SERVER_PORT=6000;
@@ -53,7 +53,7 @@ u8 udp_send(SOCKET s,u8 *ip,u16 com,u8 *databuff,u16 size)
 u8 udp_init(SOCKET s,u16 mycom)
 {
 	u8 ret=FALSE;
-	OS_ENTER_ONLYME();
+	//OS_ENTER_ONLYME();
 
 	//设置端口0的端口号
 	Write_W5500_SOCK_2Byte(s, Sn_PORT,mycom);
@@ -68,7 +68,7 @@ u8 udp_init(SOCKET s,u16 mycom)
 	}
 	else
 		ret= TRUE;
-	OS_EXIT_ONLYME();
+	//OS_EXIT_ONLYME();
 	return ret;
 }
 
@@ -176,7 +176,7 @@ u8 udp_close(SOCKET s)
 u8 socket_recv(SOCKET s,u8 *databuff)
 {
 	OS_ENTER_ONLYME();
-	Read_SOCK_Data_Buffer(0,databuff);
+	Read_SOCK_Data_Buffer(s,databuff);
 	OS_EXIT_ONLYME();
 	return 0;
 }

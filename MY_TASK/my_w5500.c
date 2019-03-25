@@ -5,6 +5,8 @@
 #include "my_messeg.h"
 #include "wk_json.h"
 #include "debug.h"
+#include "ntp.h"
+#include "power.h"
 #include "my_w5500.h"
 
 
@@ -59,11 +61,27 @@ void my_w5500 (void * t)
 	sys_test();
 	
 	
-	
+	u8 test=0;
+	u16 rest_time_w5500=0;
+	u16 rest_time_sys=0;
 	while(1)
 	{
 		delay_ms(100);
-		if (net_get_phycstate()==0) continue;//网线没有连接，执行下一次循环
+		if (net_get_phycstate()==0) 
+		{
+			rest_time_w5500++;
+			if (rest_time_w5500>=10*30)
+			{
+				W5500_Initialization();
+				rest_time_w5500=0;
+				rest_time_sys++;
+				if (rest_time_sys>=2*10)
+				{
+					//SysPowerOff();
+				}
+			}
+			continue;//网线没有连接，执行下一次循环
+		}
 		if (net_check_parameters()==0)//本机ip地址不合法
 		{
 			DBG_INTER_STATE=dhcp_retry();//自动获取IP地址
@@ -74,7 +92,11 @@ void my_w5500 (void * t)
 		}
 		my_debug ( );		//调试信息输出
 		wk_client();
-		
+		if (test)
+		{
+			ntp_gettime(2,NTP_SERVER);
+			test=0;
+		}
 	}
 }
 
@@ -90,7 +112,8 @@ void sys_test (void)
 	buff=mymalloc(2048);
 	while (test)
 	{
-		SPI_Flash_Read (buff,flashaddr,2048);
+		//SPI_Flash_Read (buff,flashaddr,2048);
+		
 	}
 	myfree(buff);
 }

@@ -37,6 +37,7 @@
 .\objects\wk_json.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\wk_json.o: ..\SYSTEM\SYS\sys.h
 .\objects\wk_json.o: ..\SYSTEM\DELAY\delay.h
+.\objects\wk_json.o: ..\SYSTEM\RTC\rtc.h
 .\objects\wk_json.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\wk_json.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\wk_json.o: ..\HARDWARE\STMFLASH\stmflash.h

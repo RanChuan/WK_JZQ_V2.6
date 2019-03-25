@@ -105,6 +105,7 @@ void my_lcd (void * t)
 			}
 		}
 		lcd_timetosleep();
+		mymemset (buf,0,30);
 		LCD_Receive_Data(buf,&reclen);
 
 		for(i=0;i<reclen;i++)//ÅÐ¶ÏÊý¾ÝÄÚÈÝ

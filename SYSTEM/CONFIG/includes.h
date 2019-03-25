@@ -21,6 +21,7 @@
 #include "os_cpu.h"
 #include "sys.h"
 #include "delay.h"
+#include "rtc.h"
 
 #include "crc8_16.h"
 #include "fats.h"

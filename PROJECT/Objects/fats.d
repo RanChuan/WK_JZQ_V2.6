@@ -37,6 +37,7 @@
 .\objects\fats.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\fats.o: ..\SYSTEM\SYS\sys.h
 .\objects\fats.o: ..\SYSTEM\DELAY\delay.h
+.\objects\fats.o: ..\SYSTEM\RTC\rtc.h
 .\objects\fats.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\fats.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\fats.o: ..\HARDWARE\STMFLASH\stmflash.h

@@ -37,6 +37,7 @@
 .\objects\dns.o: ..\SYSTEM\CPU_PORT\os_cpu.h
 .\objects\dns.o: ..\SYSTEM\SYS\sys.h
 .\objects\dns.o: ..\SYSTEM\DELAY\delay.h
+.\objects\dns.o: ..\SYSTEM\RTC\rtc.h
 .\objects\dns.o: ..\SOFTWARE\CRC8_16\crc8_16.h
 .\objects\dns.o: ..\HARDWARE\SD_CARD\fats.h
 .\objects\dns.o: ..\HARDWARE\STMFLASH\stmflash.h
