@@ -5,7 +5,6 @@
 #include "my_lcd.h"
 
 
-#include "includes.h"//调用进程挂起函数
 
 
 
@@ -348,7 +347,9 @@ void Time_Set()//休眠时间设置保存
 				time_sec=(R_buff[7]<<8)|R_buff[8];
 			}
 
-	u16 year,month,day,hour,min,sec;
+	RTC_Set(time_year,time_month,time_day,time_hour,time_min,time_sec);//设置在单片机时钟
+			
+	u16 year,month,day,hour,min,sec;			//转化为BCD码
 	year=(((time_year%100)/10)<<4)|(((time_year%100)%10));
 	month=(((time_month%100)/10)<<4)|(((time_month%100)%10));
 	day=(((time_day%100)/10)<<4)|(((time_day%100)%10));
@@ -759,6 +760,26 @@ void	lcd_messeg_03 (u8 *meg)
 	}
 }
 
+
+//获取屏幕的时间
+u8 lcd_gettime (u16 *hour,u16 *min,u16 *sec)
+{
+	u8 gettime[6]={0x5A,0xA5,0x03,0x81,0x24,0x03};//获取时间
+	u8 R_buff[10]={0};u16 R_len=0;
+	LCD_Send_Data(gettime,6);delay_ms(20);
+	LCD_Receive_Data(R_buff,&R_len);
+	if(R_buff[4]==0x24&&R_len==9)
+	{
+		*hour=(R_buff[6]>>4)*10+(R_buff[6]&0x0f);
+		*min=(R_buff[7]>>4)*10+(R_buff[7]&0x0f);
+		*sec=(R_buff[8]>>4)*10+(R_buff[8]&0x0f);
+	}
+	
+}
+
+
+
+
 void lcd_timetosleep(void)
 {
 	if (LCD_AUTOSLEEP)
@@ -768,19 +789,8 @@ void lcd_timetosleep(void)
 		if (i>=100)
 		{
 			i=0;
-			u8 gettime[6]={0x5A,0xA5,0x03,0x81,0x24,0x03};//获取时间
-			u8 R_buff[10]={0};u16 R_len=0;
 			u16 time_hour,time_min,time_sec;
-			LCD_Send_Data(gettime,6);delay_ms(20);
-			LCD_Receive_Data(R_buff,&R_len);
-			if(R_buff[4]==0x24&&R_len==9)
-			{
-				time_hour=(R_buff[6]>>4)*10+(R_buff[6]&0x0f);
-				time_min=(R_buff[7]>>4)*10+(R_buff[7]&0x0f);
-				time_sec=(R_buff[8]>>4)*10+(R_buff[8]&0x0f);
-			}
-
-
+			lcd_gettime (&time_hour,&time_min,&time_sec);
 			if ((time_hour==LCD_POWER_HS)&&(time_min==LCD_POWER_SS)&&(time_sec<=7)) 
 			{
 					LCD_tosleep();
@@ -873,6 +883,9 @@ void Set_Save(void)//设置页面保存
 	{
 		JINHUA_UPLIMIT=(buf[7]<<8)|buf[8];
 	}
+		
+		
+		
 	
 					//节能模式时间区间
 	reclen=0;

@@ -278,7 +278,10 @@ u8 dhcp_ask(dhcp_pack * discover,dhcp_pack * recvdata)
 			{
 				net_sysboot_init();
 				ret=udp_close(0);
-				Write_SOCK_Data_Buffer(1,(u8*)"网络连接成功……\r\n",18);
+				char *chars=mymalloc(128);
+				sprintf (chars,"集中器 %d 已获取的IP地址是 %d.%d.%d.%d\r\n",Get_MyAddr(),IP_Addr[0],IP_Addr[1],IP_Addr[2],IP_Addr[3]);
+				Write_SOCK_Data_Buffer(1,(u8*)chars,strlen(chars));
+				myfree(chars);
 				return ret;
 			}
 			else if (options[2]==DHCP_NAK)//ip地址分配失败

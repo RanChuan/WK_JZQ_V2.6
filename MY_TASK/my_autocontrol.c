@@ -52,7 +52,7 @@ void my_autocontrol (void * t)
 		now_tvoc=cj_data[21]+cj_data[22]/10.;
 
 		#if __USE_OLD==0
-				now_tvoc=now_tvoc*10//TVOC上限是乘以10之后的数据，在这里把tvoc数据*10后比较,2018.11.19
+				now_tvoc=now_tvoc*10;//TVOC上限是乘以10之后的数据，在这里把tvoc数据*10后比较,2018.11.19
 		#endif
 
 		

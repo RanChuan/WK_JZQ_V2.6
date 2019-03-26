@@ -61,7 +61,6 @@ void my_w5500 (void * t)
 	sys_test();
 	
 	
-	u8 test=0;
 	u16 rest_time_w5500=0;
 	u16 rest_time_sys=0;
 	while(1)
@@ -73,6 +72,7 @@ void my_w5500 (void * t)
 			if (rest_time_w5500>=10*30)
 			{
 				W5500_Initialization();
+				net_sysboot_init();
 				rest_time_w5500=0;
 				rest_time_sys++;
 				if (rest_time_sys>=2*10)
@@ -82,21 +82,21 @@ void my_w5500 (void * t)
 			}
 			continue;//网线没有连接，执行下一次循环
 		}
-		if (net_check_parameters()==0)//本机ip地址不合法
+		
+		if ((net_check_parameters()==0)||//本机ip地址不合法
+			(checkNetstate(CONFLICT)))//ip冲突
 		{
-			DBG_INTER_STATE=dhcp_retry();//自动获取IP地址
-		}
-		if (checkNetstate(CONFLICT))//ip冲突
-		{
-			DBG_INTER_STATE=dhcp_retry();//自动获取IP地址
+			if (dhcp_retry()==TRUE)//自动获取IP地址
+			{
+				DBG_INTER_STATE=1;
+			}
+			else
+			{
+				DBG_INTER_STATE=0;
+			}
 		}
 		my_debug ( );		//调试信息输出
 		wk_client();
-		if (test)
-		{
-			ntp_gettime(2,NTP_SERVER);
-			test=0;
-		}
 	}
 }
 
@@ -129,7 +129,7 @@ void wk_client(void)
 {
 	u8 m_send[MESSEG_DATA]={0};
 	u8 m_recv[MESSEG_DATA]={0};
-	
+	static u8 check_gateway_fail_time=0;
 	/*中断消息处理*/
 	if (checkSocketState(0,IR_CON))//连接成功发送上线消息
 	{
@@ -151,11 +151,19 @@ void wk_client(void)
 			{
 				DBG_INTER_STATE=1;//连接上网关
 				serch_server();//查找服务器
+				check_gateway_fail_time=0;
 			}
 			else
 			{
-				DBG_INTER_STATE=0;
-				DBG_INTER_STATE=dhcp_retry();//自动获取IP地址
+				check_gateway_fail_time++;
+				if (check_gateway_fail_time>5)
+				{
+					DBG_INTER_STATE=0;
+					if (dhcp_retry()==TRUE)//自动获取IP地址
+					{
+						check_gateway_fail_time=0;
+					}
+				}
 			}
 		}
 		else

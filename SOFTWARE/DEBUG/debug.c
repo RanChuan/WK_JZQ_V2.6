@@ -9,6 +9,7 @@
 #include "my_idle.h"
 #include "wk_json.h"
 #include "cmd.h"
+#include "iwdg.h"
 #include "debug.h"
 
 
@@ -45,6 +46,7 @@ void my_debug (void)
 
 			if (DBG_PORT==7010)
 			{
+				IWDG_Feed();
 				cmd_byudp (recvbuff+8); 
 			}
 			else 
@@ -126,6 +128,10 @@ void dbg_Interpreter(u8 *recvbuff)
 	else if (samestr((u8*)"ntp",recvbuff+8))
 	{
 		dbg_ntp(recvbuff+8+3); 
+	}
+	else if (samestr((u8*)"whos",recvbuff+8))
+	{
+		dbg_whos(recvbuff+8+3); 
 	}
 	else
 	{
@@ -381,6 +387,9 @@ void dbg_help(void)
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 
 	ptxt="\t输入\"task getidle\"查询运行异常的任务\r\n";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
+	ptxt="\t向广播地址发送\"whos\"查询接入网络的集中器\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 
 
@@ -917,8 +926,8 @@ void dbg_ntp (u8 *buff)
 	time=ntp_gettime(2,NTP_SERVER);
 	if (time!=0)
 	{
-		RTC_SetTimeBySec(time+8*3600);
-		sprintf (chars,"获取到的时间是：%d\r\n",time);
+		RTC_SetTimeBySec(time+8*3600-0x83AA7E80);//加上中国的时区，减去1900到1970的时间差
+		sprintf (chars,"获取到的时间是：%u\r\n",time);
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)chars,strlen((const char *)chars));
 	}
 	else
@@ -928,6 +937,20 @@ void dbg_ntp (u8 *buff)
 	}
 	myfree(chars);
 }
+
+
+
+void dbg_whos(u8 *buff)
+{
+	char *chars=mymalloc(128);
+	sprintf (chars,"编号 %d 的集中器IP地址是 %d.%d.%d.%d\r\n",Get_MyAddr(),IP_Addr[0],IP_Addr[1],IP_Addr[2],IP_Addr[3]);
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)chars,strlen((const char *)chars));
+	myfree(chars);
+}
+
+
+
+
 
 
 

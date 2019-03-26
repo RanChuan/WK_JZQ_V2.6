@@ -42,7 +42,7 @@ u32 ntp_gettime (u8 socket,u8 *serverip)
 	{
 		u8 *buff=mymalloc (2048);
 		socket_recv(socket,buff);
-		time=(buff[8+48]<<24)|(buff[8+49]<<16)|(buff[8+50]<<8)|(buff[8+51]);
+		time=(buff[8+40]<<24)|(buff[8+41]<<16)|(buff[8+42]<<8)|(buff[8+43]);
 		myfree(buff);
 	}
 	return time;

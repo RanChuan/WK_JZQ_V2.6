@@ -68,6 +68,10 @@ void AutoCtr(void);
 
 void Into_Senior(u8 *buf);//进入高级设置
 
+//获取屏幕的时间
+u8 lcd_gettime (u16 *hour,u16 *min,u16 *sec);
+
+
 void lcd_timetosleep(void);//自动开关屏，大约5秒判断一次
 
 

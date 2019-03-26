@@ -69,4 +69,5 @@
 .\objects\debug.o: ..\MY_TASK\my_idle.h
 .\objects\debug.o: ..\SOFTWARE\WK_JSON\wk_json.h
 .\objects\debug.o: ..\SOFTWARE\CMD\cmd.h
+.\objects\debug.o: ..\SYSTEM\IWDG\iwdg.h
 .\objects\debug.o: ..\SOFTWARE\DEBUG\debug.h

@@ -102,6 +102,9 @@ void dbg_task (u8 *buff);
 void dbg_ping (u8 *buff);
 
 void dbg_ntp (u8 *buff);
+
+void dbg_whos(u8 *buff); 
+
 /**********÷¥––÷∏¡Ó****************/
 
 
