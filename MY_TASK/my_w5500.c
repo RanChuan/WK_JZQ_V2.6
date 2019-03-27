@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "ntp.h"
 #include "power.h"
+#include "hard_irq.h"
 #include "my_w5500.h"
 
 
@@ -55,7 +56,9 @@ void my_w5500 (void * t)
 	a.malloc_fn=mymalloc;
 	a.free_fn=myfree;
 	cJSON_InitHooks(&a);
-
+	SOCKET0_SetFocus(OSPrioHighRdy);
+	SOCKET1_SetFocus(OSPrioHighRdy);
+	SOCKET2_SetFocus(OSPrioHighRdy);
 	
 	void sys_test (void);
 	sys_test();

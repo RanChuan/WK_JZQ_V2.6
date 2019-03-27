@@ -333,6 +333,12 @@ extern u8 Read_W5500_1Byte(unsigned short reg);
 
 
 
+
+void W5500_IRQ (void);
+
+
+
+
 //获取指定端口的状态
 u8 getSocketState (u8 socket);
 

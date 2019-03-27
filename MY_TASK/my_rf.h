@@ -27,33 +27,34 @@
 
 
 
+//处理消息循环
+void my_rf_loop (void * t);
+
+//无线的数据处理
+void my_rf_deal (void * t);
+
+//处理手动消息
+void my_rf_hand (void * t);
 
 
 
-
-
-				//获取设备信息，recv是接收数组
+//获取设备信息，recv是接收数组
 u16 Cmd_0x01 (u16 addr ,u8 *recv);
 
-
-					//控制设备
+//控制设备
 u16 Cmd_0x03 (u16 addr ,u8 type,u8 power,u8 state);
 
+//进入退出配置模式
 u16 Cmd_0x06 (u16 addr ,u8 state);
 
+//配置基本参数
 u16 Cmd_0x07 (u16 addr ,u8 type);
 
 
 
-//处理消息循环
-void my_rf_loop (void * t);
-
-				//无线的数据处理
-void my_rf_deal (void * t);
 
 
-					//处理手动消息
-void my_rf_hand (void * t);
+
 
 
 void loushui_warn(u16 addr,u8 devtype);

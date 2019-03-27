@@ -32,7 +32,7 @@ void BEEP_Init(void)
 
 	GPIO_ResetBits(GPIOC,GPIO_Pin_13);//输出0，关闭蜂鸣器输出
 
-	addTimerIrq10us(Beep_Run);
+	//addTimerIrq10us(Beep_Run);
 }
 
 
@@ -1258,7 +1258,8 @@ void Beep_Play (jianpu *jianpu_)
 		i++;
 	}
 	sond[i*2+1]=0;//标记时长为0，这时播放停止
-	TIM_Cmd(TIM2,ENABLE); 
+	//TIM_Cmd(TIM2,ENABLE); 
+	addTimerIrq10us(Beep_Run);
 }
 
 
@@ -1302,7 +1303,8 @@ void Beep_Run(void)
 				sond=0;
 				BEEP=0;
 				BEEP_BUSY=0;
-				TIM_Cmd(TIM2, DISABLE);  //关闭定时器	
+				//TIM_Cmd(TIM2, DISABLE);  //关闭定时器	
+				delTimerIrq10us(Beep_Run);
 			}
 		}
 	}

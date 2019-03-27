@@ -1,4 +1,5 @@
 #include "includes.h"
+#include "hard_irq.h"
 #include "lcd.h"
 
 /**************************************************
@@ -13,7 +14,6 @@
 
 
 
-u8 LCD_FOCUS=TASK_MAX_NUM;
 
 
 
@@ -60,15 +60,15 @@ void USART2_IRQHandler(void)
 		res=MY_USART->DR;
 		res=0;
 		USART2_IDLE=1;
-		TaskIntSendMsg(LCD_FOCUS,1);//发送给焦点进程
+		TaskIntSendMsg(0,SYS_MSG_USART2);//发送给焦点进程
 	}
 } 
 
 
 void LCD_SetFocus(u8 focus)
 {
-	if (focus<TASK_MAX_NUM)
-		LCD_FOCUS=focus;
+//	if (focus<TASK_MAX_NUM)
+//		LCD_FOCUS=focus;
 }
 
 

@@ -9,19 +9,30 @@
 
 
 
-		//命令缓冲区长度
+		
+		
+//命令缓冲区长度
 #define MESSEG_NUM 30
-		//数据位长度
+		
+//数据位长度
 #define MESSEG_DATA 9
 
 
-					//系统消息类型
+//系统消息类型
 #define  MSG_TYPE 		0xff000000
 #define  SYS_MSG	 		0x01000000
 #define  TASK_MSG 		0x02000000
+#define  SOFT_MSG			0x04000000				//软件设备，例如软件定时器
+#define  DELAY_END		0x80000000
 #define  GET_MSGTYPE(msg,type) (((msg)&(MSG_TYPE))==(type))//消息类型判定宏
 
 
+		
+		
+		
+		
+		
+		
 
 //错误类型结构体
 typedef struct

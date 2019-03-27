@@ -1,6 +1,7 @@
 #include "includes.h"
 #include "rf.h"
 #include "my_messeg.h"
+#include "hard_irq.h"
 #include "my_cfg.h"
 
  u8 IN_CFG=0;//默认没有进入配置模式
@@ -38,18 +39,7 @@ void my_cfg (void * t)
 		
 		if (get_messeg(CFG_MESSEG,m_send)==0)
 		{
-			if (m_send[0]==CFG_CHANGE_CFGMODE)
-			{
-				IN_CFG=!IN_CFG;
-				if (IN_CFG==NOT_CFGMODE)
-				{
-					exit_cfg();
-				}
-				else if (IN_CFG==CFG_MODE)
-				{
-					into_cfg();
-				}
-			}
+			cfg_msg (m_send);
 		}
 		delay_ms(200);		
 		Get_Mycmd(rf_recv);
@@ -94,6 +84,80 @@ void my_cfg (void * t)
 }
 
 
+
+
+
+void rf_cfg (u8 *rf_recv)
+{
+	u8 crc[2]={0};
+	if (rf_recv[0]==0) return;
+	Get_Crc16(rf_recv,rf_recv[6]+7,crc);
+	if (crc[0]==rf_recv[rf_recv[6]+7]&&crc[1]==rf_recv[rf_recv[6]+8])//crc校验通过
+	{
+		if ((((rf_recv[2]<<8)|rf_recv[3])==Get_MyAddr())||(rf_recv[4]>=6&&rf_recv[4]<=8)||(rf_recv[4]==0x01))//地址符合
+		{
+			switch(rf_recv[4])
+			{
+				case 1:
+					cfg_0x01 (rf_recv);
+					break;
+				case 2:
+					break;
+				case 3:
+					break;
+				case 4:
+					break;
+				case 5:
+					break;
+				case 6:
+					cfg_0x06 (rf_recv);
+					break;
+				case 7:
+					cfg_0x07 (rf_recv);
+					break;
+				case 8:
+					cfg_0x08 (rf_recv);
+					break;
+				case 9:
+					cfg_0x09 (rf_recv);
+					break;
+				default:
+					cfg_retern (rf_recv[4],ERR_NULLCMD);
+					break;
+			}
+		}
+	}
+}
+
+
+
+
+
+
+void cfg_msg (u8 *msg)
+{
+	if (msg[1]) return;
+	if (msg[0]==CFG_CHANGE_CFGMODE)
+	{
+		IN_CFG=!IN_CFG;
+		if (IN_CFG==NOT_CFGMODE)
+		{
+			exit_cfg();
+		}
+		else if (IN_CFG==CFG_MODE)
+		{
+			into_cfg();
+		}
+	}
+}
+
+
+
+
+u8 cfg_getstate (void)
+{
+	return IN_CFG;
+}
 
 
 
@@ -302,9 +366,9 @@ void cfg_retern (u8 cmd,u16 err)
 void into_cfg(void)
 {
 	u8 meg[MESSEG_DATA]={0};
-	RF_SetFocus(OSPrioHighRdy);
-	TaskPend(5);//挂起消息循环
-	TaskPend(3);//挂起消息循环
+	USART1_SetFocus(OSPrioHighRdy);
+//	TaskPend(5);//挂起消息循环
+//	TaskPend(3);//挂起消息循环
 	meg[0]=1;meg[1]=1;//灯
 	meg[2]=4;//4
 	send_messeg(LIT_MESSEG,meg);//
@@ -317,9 +381,9 @@ void into_cfg(void)
 void exit_cfg(void)
 {
 	u8 meg[MESSEG_DATA]={0};
-	TaskRepend(5);//恢复消息循环
-	RF_SetFocus(3);
-	TaskRepend(3);//恢复消息循环
+//	TaskRepend(5);//恢复消息循环
+//	USART1_SetFocus(3);
+//	TaskRepend(3);//恢复消息循环
 	meg[0]=1;meg[1]=0;//灯
 	meg[2]=4;//4
 	send_messeg(LIT_MESSEG,meg);//

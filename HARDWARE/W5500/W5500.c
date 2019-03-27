@@ -7,6 +7,7 @@
  * 淘宝    ：http://yixindianzikeji.taobao.com/
 **********************************************************************************/
 #include "includes.h"
+#include "hard_irq.h"
 #include "W5500.h"	
 
 
@@ -577,9 +578,15 @@ void W5500_Init(void)
 	//IMR_CONFLICT是IP地址冲突异常中断,IMR_UNREACH是UDP通信时，地址无法到达的异常中断
 	//其它是Socket事件中断，根据需要添加
 	Write_W5500_1Byte(IMR,IM_IR7 | IM_IR6);
-	Write_W5500_1Byte(SIMR,S0_IMR|S1_IMR|S2_IMR);
+	Write_W5500_1Byte(SIMR,S0_IMR|S1_IMR|S2_IMR|S3_IMR|S4_IMR|S5_IMR|S6_IMR|S7_IMR);
 	Write_W5500_SOCK_1Byte(0, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
-	Write_W5500_SOCK_1Byte(1, Sn_IMR, IMR_RECV );
+	Write_W5500_SOCK_1Byte(1, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
+	Write_W5500_SOCK_1Byte(2, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
+	Write_W5500_SOCK_1Byte(3, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
+	Write_W5500_SOCK_1Byte(4, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
+	Write_W5500_SOCK_1Byte(5, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
+	Write_W5500_SOCK_1Byte(6, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
+	Write_W5500_SOCK_1Byte(7, Sn_IMR, IMR_SENDOK | IMR_TIMEOUT | IMR_RECV | IMR_DISCON | IMR_CON);
 }
 
 /*******************************************************************************
@@ -785,42 +792,99 @@ static u8 NET_SOCKET_STATE[8]={0};
 //有中断就给网口任务发消息
 void EXTI4_IRQHandler(void)
 {
-	u8 temp=0;u8 sntemp=0;
 	if(EXTI_GetITStatus(EXTI_Line4) != RESET)
 	{
 		EXTI_ClearITPendingBit(EXTI_Line4);
-		do
-		{
-			temp = Read_W5500_1Byte(IR);//读取中断标志寄存器
-			Write_W5500_1Byte(IR, (temp&0xf0));//回写清除中断标志
-			NET_STATE|=temp;//保存网络状况
-			temp=Read_W5500_1Byte(SIR);//读取端口中断标志寄存器	
-			if((temp & S0_INT) == S0_INT)//Socket0事件处理 
-			{
-				sntemp=Read_W5500_SOCK_1Byte(0,Sn_IR);//读取Socket0中断标志寄存器
-				Write_W5500_SOCK_1Byte(0,Sn_IR,sntemp);
-				NET_SOCKET_STATE[0]|=sntemp;
-				TaskIntSendMsg(7,1);
-			}
-			
-			if((temp & S1_INT) == S1_INT)//Socket1事件处理 
-			{
-				sntemp=Read_W5500_SOCK_1Byte(1,Sn_IR);//读取Socket1中断标志寄存器
-				Write_W5500_SOCK_1Byte(1,Sn_IR,sntemp);
-				NET_SOCKET_STATE[1]|=sntemp;
-				TaskIntSendMsg(7,1);
-			}
-			
-			if((temp & S2_INT) == S2_INT)//Socket1事件处理 
-			{
-				sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
-				Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
-				NET_SOCKET_STATE[2]|=sntemp;
-				TaskIntSendMsg(7,1);
-			}
-		}while(Read_W5500_1Byte(SIR) != 0) ;
+		TaskIntSendMsg(0,SYS_MSG_W5500);
 	}
 }
+
+
+//在任务中调用或者在中断中调用
+void W5500_IRQ (void)
+{
+	u8 temp=0;u8 sntemp=0;
+	do
+	{
+		temp = Read_W5500_1Byte(IR);//读取中断标志寄存器
+		Write_W5500_1Byte(IR, (temp&0xf0));//回写清除中断标志
+		NET_STATE|=temp;//保存网络状况
+		temp=Read_W5500_1Byte(SIR);//读取端口中断标志寄存器	
+		if((temp & S0_INT) == S0_INT)//Socket0事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(0,Sn_IR);//读取Socket0中断标志寄存器
+			Write_W5500_SOCK_1Byte(0,Sn_IR,sntemp);
+			NET_SOCKET_STATE[0]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET0);
+		}
+		
+		if((temp & S1_INT) == S1_INT)//Socket1事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(1,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(1,Sn_IR,sntemp);
+			NET_SOCKET_STATE[1]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET1);
+		}
+		
+		if((temp & S2_INT) == S2_INT)//Socket1事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
+			NET_SOCKET_STATE[2]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET2);
+		}
+
+		if((temp & S3_INT) == S3_INT)//Socket1事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
+			NET_SOCKET_STATE[2]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET3);
+		}
+
+		if((temp & S4_INT) == S4_INT)//Socket1事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
+			NET_SOCKET_STATE[2]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET4);
+		}
+
+		if((temp & S5_INT) == S5_INT)//Socket1事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
+			NET_SOCKET_STATE[2]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET5);
+		}
+
+		if((temp & S6_INT) == S6_INT)//Socket1事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
+			NET_SOCKET_STATE[2]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET6);
+		}
+
+		if((temp & S7_INT) == S7_INT)//Socket1事件处理 
+		{
+			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
+			NET_SOCKET_STATE[2]|=sntemp;
+			TaskIntSendMsg(0,W5500_SOCKET7);
+		}
+	}while(Read_W5500_1Byte(SIR) != 0) ;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 //获取指定端口的状态

@@ -2,8 +2,11 @@
 #include "w5500.h"
 #include "enternet.h"
 #include "baidu_iot.h"
+#include "my_topmsg.h"
 #include "my_iot.h"
 
+//IOT定时器计时中断
+void IOT_Hander(void);
 
 u8 MQTT_STATE=0;
 
@@ -13,10 +16,8 @@ void my_iot (void *t)
 	u8 *buff=mymalloc(2048);
 	u16 len=0;
 	u16 temper=0;
-	extern u8 DBG_IP[4];extern u16 DBG_PORT;
-	extern u8 NET_S2_STATE;
 	
-	
+	addSoftTimerIrq10ms(IOT_Hander);
 	
 	while(1)
 	{
@@ -24,52 +25,6 @@ void my_iot (void *t)
 	}
 	
 	
-	while(1)
-	{
-		if (MQTT_STATE)
-		{
-			msg=delay_ms(1000*30);
-			if (net_get_comstate(2)!=SOCK_ESTABLISHED) 
-			{
-				MQTT_STATE=0;
-				continue;
-			}
-			if (msg&1)//网口中断
-			{
-				if (NET_S2_STATE&IR_RECV)//有数据接收
-				{
-					NET_S2_STATE&=~IR_RECV;
-					udp_send(1,DBG_IP,DBG_PORT,"收到了mqtt数据\r\n",16);
-					Read_SOCK_Data_Buffer(2,buff);
-				}
-			}
-			if (msg&2)
-			{
-				//发送心跳包
-				udp_send(1,DBG_IP,DBG_PORT,"发送mqtt心跳包\r\n",16);
-				mqtt_keepalive();
-			}
-			if (msg&0x80000000)
-			{
-				
-				udp_send(1,DBG_IP,DBG_PORT,"发送mqtt数据\r\n",14);
-				len=creat_baidujson(buff,"temper",temper++);
-				mqtt_publish("$baidu/iot/shadow/two/update",buff,len);
-				continue;
-			}
-		}
-		else
-		{
-			delay_ms(3000);
-			udp_send(1,DBG_IP,DBG_PORT,"尝试连接mqtt服务器\r\n",20);
-			if (1==mqtt_connect("rahher9.mqtt.iot.gz.baidubce.com",1883,"two","rahher9/two","KGa5JL87iGCheRFF"))
-			{
-				MQTT_STATE=1;
-				udp_send(1,DBG_IP,DBG_PORT,"连接mqtt服务器成功\r\n",20);
-			}
-		}
-		
-	}
 }
 
 
@@ -97,7 +52,7 @@ void IOT_Hander(void)
 		{
 			sec=0;
 			//这里唤醒任务发送心跳包
-			TaskIntSendMsg(10,2);
+			//TaskIntSendMsg(10,2);
 		}		
 	}
 	

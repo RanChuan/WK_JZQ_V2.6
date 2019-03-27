@@ -1,4 +1,5 @@
 #include "includes.h"
+#include "hard_irq.h"
 #include "rf.h"
 
 //////////////////////////////////////////////////////////////////////////////////	 
@@ -27,8 +28,6 @@
 
 
 
-		//无线的输入焦点
-u8 RF_FOCUS=TASK_MAX_NUM;
 
 
 
@@ -96,11 +95,6 @@ int fputc(int ch, FILE *f)
 
 
 
-void RF_SetFocus(u8 focus)
-{
-	if (focus<TASK_MAX_NUM)
-		RF_FOCUS=focus;
-}
 
 
 
@@ -412,7 +406,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 		t=USART1->SR;
 		t=USART1->DR;
 		t=0;
-		TaskIntSendMsg(RF_FOCUS,1);//发送给无线焦点进程
+		TaskIntSendMsg(0,SYS_MSG_USART1);//发送给无线焦点进程
 	}
 	if(USART_GetITStatus(USART1, USART_IT_TXE) != RESET)  //发送中断
 	{
@@ -426,7 +420,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 u16 RF1_tx_bytes( uint8_t* TxBuffer, uint8_t Length )
 {
 	
-	if (RF_FOCUS!=OSPrioHighRdy) return 0;//不是焦点进程调用无效
+	if (USART1_GetFocus()!=OSPrioHighRdy) return 0;//不是焦点进程调用无效
 	if (!Length) return 0;
 	while( Length-- )
 	{

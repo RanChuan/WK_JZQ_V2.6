@@ -1,5 +1,6 @@
 #include "includes.h"
 #include "timer.h"
+#include "hard_irq.h"
 #include "key.h"
 
 
@@ -40,6 +41,11 @@ void Key_Init (void)
 	GPIO_Init(GPIOC, &GPIO_InitStructure); //新板子不使用以前的按键灯光2018.11.5，这4个IO用来做触摸按键
 
 	addTimerIrq10ms(KEY_IRQHandler);//在定时器中添加中断服务函数
+	for (u8 i=0;i<6;i++)
+	{
+		Get_Key (i+1);
+	}
+
 }
 
 
@@ -205,7 +211,7 @@ void KEY_IRQHandler(void)   //
 			key_valid[5]=0;//按键设为有效
 		}
 		if (KEY_Effective)//有按键按下时唤醒处理任务
-			TaskIntSendMsg(1,1);
+			TaskIntSendMsg(0,SYS_MSG_KEY); 
 
 }
 

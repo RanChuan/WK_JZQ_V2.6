@@ -67,4 +67,5 @@
 .\objects\my_w5500.o: ..\SOFTWARE\DEBUG\debug.h
 .\objects\my_w5500.o: ..\SOFTWARE\NTP\ntp.h
 .\objects\my_w5500.o: ..\SOFTWARE\POWER\power.h
+.\objects\my_w5500.o: ..\HARDWARE\hard_irq.h
 .\objects\my_w5500.o: ..\MY_TASK\my_w5500.h

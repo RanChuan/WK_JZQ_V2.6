@@ -69,3 +69,4 @@
 .\objects\main.o: ..\MY_TASK\my_cfg.h
 .\objects\main.o: ..\MY_TASK\my_iot.h
 .\objects\main.o: ..\MY_TASK\my_idle.h
+.\objects\main.o: ..\MY_TASK\my_topmsg.h

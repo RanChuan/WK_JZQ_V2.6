@@ -59,4 +59,5 @@
 .\objects\w5500.o: ..\SOFTWARE\JSON\cjson.h
 .\objects\w5500.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\w5500.o: ..\SOFTWARE\DATA_MAP\data_map.h
+.\objects\w5500.o: ..\HARDWARE\hard_irq.h
 .\objects\w5500.o: ..\HARDWARE\W5500\W5500.h

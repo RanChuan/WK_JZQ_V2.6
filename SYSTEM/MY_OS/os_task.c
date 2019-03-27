@@ -265,7 +265,7 @@ u8 TaskSendMsg(u8 pro,INT32U msg)
 
 
 
-	//任务内部处理了消息之后调用这个函数开始休息
+//任务内部处理了消息之后调用这个函数开始休息
 void TaskMsgZero(void)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
@@ -277,21 +277,26 @@ void TaskMsgZero(void)
 }
 
 
-	//等待消息唤醒
+//等待消息唤醒
 INT32U TaskGetMsg(void)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
 		OS_CPU_SR  cpu_sr;
 	#endif
+	u32 msg=0;
 	OS_ENTER_CRITICAL(); 
-	TCB_Table[OSPrioHighRdy].MYWork=0;//休眠自己
-	Task_DelFree(OSPrioHighRdy);
+	if (TCB_Table[OSPrioHighRdy].MYWork==0)
+		Task_DelFree(OSPrioHighRdy);
 	OS_EXIT_CRITICAL();
 	
 					//高优先级任务主动释放CPU在这里进行任务跳转
 	ToggleTasks();
 	while(!TASK_Free);
-	return TCB_Table[OSPrioHighRdy].MYWork;
+	msg=TCB_Table[OSPrioHighRdy].MYWork;
+	OS_ENTER_CRITICAL(); 
+	TCB_Table[OSPrioHighRdy].MYWork=0;//清除自身的消息
+	OS_EXIT_CRITICAL();	
+	return msg;
 }
 
 u8 ONLYME_PRO=TASK_MAX_NUM;//记录进入不可调度状态的任务

@@ -60,4 +60,5 @@
 .\objects\key.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\key.o: ..\SOFTWARE\DATA_MAP\data_map.h
 .\objects\key.o: ..\HARDWARE\TIMER\timer.h
+.\objects\key.o: ..\HARDWARE\hard_irq.h
 .\objects\key.o: ..\HARDWARE\KEY\key.h

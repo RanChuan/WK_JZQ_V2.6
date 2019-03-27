@@ -133,6 +133,10 @@ void dbg_Interpreter(u8 *recvbuff)
 	{
 		dbg_whos(recvbuff+8+3); 
 	}
+	else if (samestr((u8*)"find ",recvbuff+8))
+	{
+		dbg_find(recvbuff+8+5); 
+	}
 	else
 	{
 		dbg_err(1);
@@ -392,6 +396,8 @@ void dbg_help(void)
 	ptxt="\t向广播地址发送\"whos\"查询接入网络的集中器\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 
+	ptxt="\t向广播地址发送\"find [名称\\编号]\"查找指定名称或指定编号的集中器\r\n";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 
 
 	
@@ -949,7 +955,21 @@ void dbg_whos(u8 *buff)
 }
 
 
-
+void dbg_find(u8 *buff)
+{
+	char *chars=mymalloc(128);
+	if (samestr((u8*)getMyName(),buff))
+	{
+		sprintf (chars,"%s 的编号是 %d ，IP地址是 %d.%d.%d.%d\r\n",buff,Get_MyAddr(),IP_Addr[0],IP_Addr[1],IP_Addr[2],IP_Addr[3]);
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)chars,strlen((const char *)chars));
+	}
+	else if (str2num(buff)==Get_MyAddr())
+	{
+		sprintf (chars,"编号 %d 的名称是 %s，IP地址是 %d.%d.%d.%d\r\n",Get_MyAddr(),getMyName(),IP_Addr[0],IP_Addr[1],IP_Addr[2],IP_Addr[3]);
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)chars,strlen((const char *)chars));
+	}
+	myfree(chars);
+}
 
 
 

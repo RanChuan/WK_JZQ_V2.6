@@ -18,11 +18,6 @@
 
 
 
-	static u8 key[6]={0};
-	static u8 state[6]={0,0,0,0,0x3f,0};//短按状态
-	static u8 statel[6]={0,0,0,0,1,0};//长安状态
-
-u8 key_color[3][6]={0};
 	
 					//获取按键状态
 u8 get_keystate(u8 key_num)
@@ -41,11 +36,6 @@ void my_key (void *t)
 	u8 i=0;
 	
 	Key_Init();
-	for (i=0;i<6;i++)
-	{
-		key[i]=Get_Key (i+1);
-		key[i]=PRESS_NONE;
-	}
 	while(1)
 	{
 		TaskGetMsg();

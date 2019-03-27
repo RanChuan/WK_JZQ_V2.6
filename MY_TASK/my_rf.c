@@ -1,6 +1,8 @@
 #include "includes.h"
 #include "rf.h"
+#include "hard_irq.h"
 #include "my_messeg.h"
+#include "my_cfg.h"
 #include "my_rf.h"
 
 
@@ -28,19 +30,23 @@
 
 u8 HANDING=0;//手动操作是否在进行
 
+
+void rf_loop (u16 i);
+void rf_send (u16 i);
+void rf_hand (u8 *msg);
+
+
+
 //处理消息循环
 void my_rf_loop (void * t)
 {
-	u8 rf_recv[40]={0};
 	u16 i;//循环变量
-	u16 ret;//返回值
-	extern u8 IN_CFG; 
 	
 	RF_M0=0;
 	RF_M1=0;
 	RF_Init(115200);
 	
-	RF_SetFocus(OSPrioHighRdy);
+	USART1_SetFocus(OSPrioHighRdy);
 	
 	
 	Load_Config();
@@ -50,79 +56,115 @@ void my_rf_loop (void * t)
 	Updata_DeviceNum();
 	while (1)
 	{
+		delay_ms(30);//防止没有设备的时候死机
 		for (i=1;EN_CONFIG[i*2+1];i++)
 		{
-			delay_ms(1000);//采集器延时1s，防止下一个冲突
-			ret=Cmd_0x01 (EN_CONFIG[i*2] ,rf_recv);
-			if (ret==0)//成功
+			if (delay_ms(1000)==DELAY_END)//没有收到其他消息
 			{
-				if ((EN_CONFIG[i*2+1]&0x00ff)==1)
-//				if (rf_recv[9]==1)//类型是采集器
+				if (cfg_getstate()==0)
 				{
-					EN_CONFIG[i*2+1]|=DEVICEON;
-					
-					//模拟收到了消息
-					rf_recv[0]=0xff;
-					rf_recv[1]=0xff;
-					rf_recv[2]=EN_CONFIG[i*2]>>8;
-					rf_recv[3]=EN_CONFIG[i*2];
-					
-					rf_cjq_deal(rf_recv);
-					if (EN_DATA[1]!=0xff)
-						copy_data(rf_recv,EN_DATA,rf_recv[6]+7);
+					rf_loop(i);		//消息循环
 				}
-				else 
-				{
-					
-									//设备开关状态
-					if (rf_recv[7+9]==1) 
-					{
-						EN_CONFIG[i*2+1]|=DEVICEON;
-					}
-					else 
-					{
-						EN_CONFIG[i*2+1]&=~DEVICEON;
-					}
-					
-					if (GetDeviceType(EN_CONFIG[i*2])!=6)//不是恒湿机
-					{
-										//设备升降状态
-						if (rf_recv[8+9]==1) 
-						{
-							EN_CONFIG[i*2+1]|=DEVICEUP;
-							EN_CONFIG[i*2+1]&=~DEVICEDOWN;
-						}
-						else if (rf_recv[8+9]==2)
-						{
-							EN_CONFIG[i*2+1]|=DEVICEDOWN;
-							EN_CONFIG[i*2+1]&=~DEVICEUP;
-						}
-					}else
-					{
-					}
-					if(rf_recv[9+11]) //发送漏水报警
-						loushui_warn(EN_CONFIG[i*2],GetDeviceType(EN_CONFIG[i*2]));
-				}
-				EN_CONFIG[i*2+1]&=~0xf800;//在线
+				rf_send(i);		//发送状态消息
 			}
-			else if (ret==ERR_TIMEOUT)
+			
+			u8 msg[MESSEG_DATA]={0};
+			u8 rf_recv[50]={0};
+			if (get_messeg(RF_MESSEG,msg)==0)
 			{
-				EN_CONFIG[i*2+1]+=0x1000;//离线计数器
-				if ((EN_CONFIG[i*2+1]>>12)>5)//连续5次超时，确认离线
+				if (cfg_getstate()==0)
 				{
-					EN_CONFIG[i*2+1]&=0x00ff;//离线了
-					EN_CONFIG[i*2+1]|=DEVICEOFFLINE;//离线了
+					rf_hand(msg);
 				}
+				cfg_msg(msg);
 			}
-			else
-			{
-					EN_CONFIG[i*2+1]&=0x00ff;//离线了
-					EN_CONFIG[i*2+1]|=DEVICEOFFLINE;//离线了
-			}
+			Get_Mycmd(rf_recv);
+			rf_cfg(rf_recv);
 		}
 	}
 }
  
+
+
+
+void rf_loop (u16 i)
+{
+	u8 rf_recv[40]={0};
+	u16 ret;//返回值
+	ret=Cmd_0x01 (EN_CONFIG[i*2] ,rf_recv);
+	if (ret==0)//成功
+	{
+		if ((EN_CONFIG[i*2+1]&0x00ff)==1)
+		{
+			EN_CONFIG[i*2+1]|=DEVICEON;
+
+			//模拟收到了消息
+			rf_recv[0]=0xff;
+			rf_recv[1]=0xff;
+			rf_recv[2]=EN_CONFIG[i*2]>>8;
+			rf_recv[3]=EN_CONFIG[i*2];
+
+			rf_cjq_deal(rf_recv);
+			if (EN_DATA[1]!=0xff)
+			copy_data(rf_recv,EN_DATA,rf_recv[6]+7);
+		}
+		else 
+		{
+				//设备开关状态
+			if (rf_recv[7+9]==1) 
+			{
+				EN_CONFIG[i*2+1]|=DEVICEON;
+			}
+			else 
+			{
+				EN_CONFIG[i*2+1]&=~DEVICEON;
+			}
+
+			if (GetDeviceType(EN_CONFIG[i*2])!=6)//不是恒湿机
+			{
+						//设备升降状态
+				if (rf_recv[8+9]==1) 
+				{
+					EN_CONFIG[i*2+1]|=DEVICEUP;
+					EN_CONFIG[i*2+1]&=~DEVICEDOWN;
+				}
+				else if (rf_recv[8+9]==2)
+				{
+					EN_CONFIG[i*2+1]|=DEVICEDOWN;
+					EN_CONFIG[i*2+1]&=~DEVICEUP;
+				}
+			}else
+			{
+			}
+			if(rf_recv[9+11]) //发送漏水报警
+			loushui_warn(EN_CONFIG[i*2],GetDeviceType(EN_CONFIG[i*2]));
+		}
+		EN_CONFIG[i*2+1]&=~0xf800;//在线
+	}
+	else if (ret==ERR_TIMEOUT)
+	{
+		EN_CONFIG[i*2+1]+=0x1000;//离线计数器
+		if ((EN_CONFIG[i*2+1]>>12)>5)//连续5次超时，确认离线
+		{
+		EN_CONFIG[i*2+1]&=0x00ff;//离线了
+		EN_CONFIG[i*2+1]|=DEVICEOFFLINE;//离线了
+		}
+	}
+	else
+	{
+		EN_CONFIG[i*2+1]&=0x00ff;//离线了
+		EN_CONFIG[i*2+1]|=DEVICEOFFLINE;//离线了
+	}
+
+
+}
+
+
+
+
+
+
+
 
 void loushui_warn(u16 addr,u8 devtype)
 {
@@ -246,6 +288,137 @@ void load_test_cfg(void)
 
 
 
+void rf_hand (u8 *msg)
+{
+	u8 m_send[MESSEG_DATA]={0};//用来给网口返回控制信息
+	u16 my_i=0;
+	u16 m=0;//操作失败次数；
+	u16 ret;
+	u16 id=0;
+	u16 newret=0;
+	u8 newpower;
+	u8 newstate_;//newstate这个变量名可能是系统关键字，会自动改变
+	if ((msg[0]!=0)&&(msg[1]==2)) 
+	{
+		m=0;
+		id=(msg[2]<<8)|msg[3];
+		if (id==0)				//地址为0，控制全部同类设备
+		{
+			my_i=0;
+			while(my_i<GetDeviceNum(msg[0]))
+			{
+				if (GetDeviceState(GetNextDeviceaddr(msg[0],my_i))&DEVICEOFFLINE)
+				{
+					my_i++;//设备不在线
+					continue;
+				}
+				delay_ms(200);			
+										//获取新的控制设备的状态,高8位开关，低8位状态
+				newret=get_newstate(msg[4],msg[5],GetNextDeviceaddr(msg[0],my_i));newstate_=newret;newpower=(newret>>8);
+														//设备地址，设备类型，开关状态，附加参数
+				ret=Cmd_0x03 (GetNextDeviceaddr(msg[0],my_i),msg[0],newpower,newstate_);
+				if (ret==0)
+				{
+					Updata_devicestate(GetNextDeviceaddr(msg[0],my_i) ,newpower,newstate_);
+					Device_state_see(msg[0],newpower,newstate_);
+					my_i++;//控制成功，控制下一个
+				}
+				else
+				{
+					m++;if (m>10){m=0;my_i++;}//重试10次
+				}
+			}
+			//加一个控制恒湿机的循环
+			if (msg[0]==3||msg[0]==5)
+			{
+				my_i=0;
+				msg[0]=6;
+				while(my_i<GetDeviceNum(6))//一体机的个数
+				{
+					if (GetDeviceState(GetNextDeviceaddr(msg[0],my_i))&DEVICEOFFLINE)
+					{
+						my_i++;//设备不在线
+						continue;
+					}
+					delay_ms(200);	
+					newret=yt_newstate(msg[4],msg[5],GetNextDeviceaddr(msg[0],my_i));newpower=(newret>>8);
+					newstate_=newret;
+															//设备地址，设备类型，开关状态，附加参数
+					ret=Cmd_0x03 (GetNextDeviceaddr(msg[0],my_i),msg[0],newpower,newstate_);
+					if (ret==0)
+					{
+						if (newstate_==99)
+						{
+							Updata_devicestate(GetNextDeviceaddr(msg[0],my_i) ,newpower,1);
+							Device_state_see(5,newpower,1);
+						}
+						else if (newstate_==1)
+						{
+							Updata_devicestate(GetNextDeviceaddr(msg[0],my_i) ,newpower,2);
+							Device_state_see(3,newpower,2);
+						}
+						else
+						{
+							Updata_devicestate(GetNextDeviceaddr(msg[0],my_i) ,newpower,0);
+							Device_state_see(3,newpower,newstate_);
+							Device_state_see(5,newpower,newstate_);
+						}
+						my_i++;//控制成功，控制下一个
+					}
+					else
+					{
+						m++;if (m>10){m=0;my_i++;}//重试10次
+					}
+				}
+			}
+		}
+		else //控制指定地址的设备
+		{
+			while (1)
+			{
+				delay_ms(200);			
+				if (CheckId (id)==0)
+				{
+					//给网口返回执行结果，不存在指定的ip地址
+					m_send[0]=5;m_send[1]=ERR_NONEADDR>>8;m_send[2]=ERR_NONEADDR;
+					send_messeg(WK_MESSEG,m_send);
+					break;
+				}
+												//设备地址，设备类型，开关状态，附加参数
+				ret=Cmd_0x03 (id,GetDeviceType(id),msg[4],msg[5]);
+				if (ret==0)
+				{
+					Updata_devicestate(id ,msg[4],msg[5]);
+					Device_state_see(GetDeviceType(id),msg[4],msg[5]);
+					//给网口返回执行结果，成功
+					m_send[0]=5;m_send[1]=ret>>8;m_send[2]=ret;
+					send_messeg(WK_MESSEG,m_send);
+					
+					break;//控制成功，退出
+				}
+				else if (GetDeviceState(id)&DEVICEOFFLINE)
+				{
+					//给网口返回执行结果，设备不在线
+					m_send[0]=5;m_send[1]=ERR_OFFLINE>>8;m_send[2]=ERR_OFFLINE;
+					send_messeg(WK_MESSEG,m_send);
+					break;//设备不在线
+				}
+				else
+				{
+					m++;if (m>10){
+						//给网口返回执行结果，执行结果
+					m_send[0]=5;m_send[1]=ret>>8;m_send[2]=ret;
+					send_messeg(WK_MESSEG,m_send);
+						
+					break;}//重试10次
+				}
+			}
+		}
+	}
+}
+
+
+
 
 
 
@@ -269,7 +442,7 @@ void my_rf_hand (void * t)
 		}
 		else
 		{
-			RF_SetFocus(OSPrioHighRdy);
+			USART1_SetFocus(OSPrioHighRdy);
 			TaskPend(3);
 			if ((msg[0]!=0)&&(msg[1]==2)) 
 			{
@@ -388,7 +561,7 @@ void my_rf_hand (void * t)
 					}
 				}
 			}
-			RF_SetFocus(3);
+			USART1_SetFocus(3);
 			TaskRepend(3);
 		}
 	}
@@ -694,7 +867,63 @@ void Device_state_see(u8 type,u8 power,u8 state)
 
 
 
-
+void rf_send (u16 i)
+{
+	u8 send[MESSEG_DATA]={0};
+	if ((EN_CONFIG[i*2+1]&0x00ff)==1)//是采集器
+	{
+		//发送采集器离线消息，在线时的消息在消息循环里发送
+		if ((EN_CONFIG[i*2+1]&DEVICEOFFLINE))
+		{
+			send[0]=2;send[1]=1;send[2]=1;//发送采集器的数据
+			send[3]=((u32 )EN_DATA>>24);	//设置地址
+			send[4]=((u32 )EN_DATA>>16);
+			send[5]=((u32 )EN_DATA>>8);
+			send[6]=((u32 )EN_DATA);
+			send[7]=EN_CONFIG[i*2]>>8;//地址
+			send[8]=EN_CONFIG[i*2];
+			if (find_messeg(WK_MESSEG)==0)
+				send_messeg(WK_MESSEG,send);//发送给网口
+		}
+	}
+	else
+	{
+		{
+			send[0]=2;//发送消息
+			send[1]=EN_CONFIG[i*2+1];//类型
+			if ((EN_CONFIG[i*2+1]&DEVICEOFFLINE)==0)//设备是在线的
+				send[2]=0;//设备在线
+			else 
+				send[2]=1;
+			send[3]=EN_CONFIG[i*2]>>8;//地址
+			send[4]=EN_CONFIG[i*2];
+			if ((EN_CONFIG[i*2+1]&DEVICEON)==DEVICEON)
+			{
+				send[5]=1;//设备开
+				if ((EN_CONFIG[i*2+1]&DEVICEUP)==DEVICEUP)
+				{
+					send[6]=1;//升
+				}
+				else if ((EN_CONFIG[i*2+1]&DEVICEDOWN)==DEVICEDOWN)//2019.2.28 给上位机返回没有降状态的bug 
+				{
+					send[6]=2;//降
+				}
+				else
+				{
+					send[6]=0;
+				}
+			}
+			else
+			{
+				send[5]=0;		//设备是关的
+				send[6]=0;
+			}
+			if (find_messeg(WK_MESSEG)==0)
+				send_messeg(WK_MESSEG,send);//发送给网口
+		}
+	}
+	
+}
 
 
 

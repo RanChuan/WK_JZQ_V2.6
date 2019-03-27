@@ -59,4 +59,5 @@
 .\objects\lcd.o: ..\SOFTWARE\JSON\cjson.h
 .\objects\lcd.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\lcd.o: ..\SOFTWARE\DATA_MAP\data_map.h
+.\objects\lcd.o: ..\HARDWARE\hard_irq.h
 .\objects\lcd.o: ..\HARDWARE\LCD\lcd.h

@@ -124,8 +124,8 @@ void SysTick_Handler (void)
 		{
 			TCB_Table[i].MYDelay_ms--;
 			if (TCB_Table[i].MYDelay_ms==0)
-			{
-				TaskIntSendMsg(i,0x80000000);//在计数到0时发送一次任务唤醒
+			{ 
+				TaskIntSendMsg(i,DELAY_END);//在计数到0时发送一次任务唤醒
 			}
 		}
 	}

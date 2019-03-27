@@ -59,4 +59,5 @@
 .\objects\rf.o: ..\SOFTWARE\JSON\cjson.h
 .\objects\rf.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\rf.o: ..\SOFTWARE\DATA_MAP\data_map.h
+.\objects\rf.o: ..\HARDWARE\hard_irq.h
 .\objects\rf.o: ..\HARDWARE\RF\rf.h

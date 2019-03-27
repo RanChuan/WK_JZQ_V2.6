@@ -14,8 +14,6 @@ void my_iot (void *t);
 
 
 
-//IOT定时器计时中断
-void IOT_Hander(void);
 
 		
 		

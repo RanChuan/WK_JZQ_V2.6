@@ -367,7 +367,7 @@ uint8 dns_query(uint8 s, uint8 * name,u8 * ip)
 {
 	u8 *buff=mymalloc(2048);
 	u16 lens=0;
-	struct dhdr ddd;
+	struct dhdr ddd={0};
 	u8 ret=0;
 	u8 i=0;
 	if (udp_init(s,444)==TRUE)

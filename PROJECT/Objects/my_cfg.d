@@ -61,4 +61,5 @@
 .\objects\my_cfg.o: ..\SOFTWARE\DATA_MAP\data_map.h
 .\objects\my_cfg.o: ..\HARDWARE\RF\rf.h
 .\objects\my_cfg.o: ..\MY_TASK\my_messeg.h
+.\objects\my_cfg.o: ..\HARDWARE\hard_irq.h
 .\objects\my_cfg.o: ..\MY_TASK\my_cfg.h

@@ -60,5 +60,7 @@
 .\objects\my_rf.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\my_rf.o: ..\SOFTWARE\DATA_MAP\data_map.h
 .\objects\my_rf.o: ..\HARDWARE\RF\rf.h
+.\objects\my_rf.o: ..\HARDWARE\hard_irq.h
 .\objects\my_rf.o: ..\MY_TASK\my_messeg.h
+.\objects\my_rf.o: ..\MY_TASK\my_cfg.h
 .\objects\my_rf.o: ..\MY_TASK\my_rf.h

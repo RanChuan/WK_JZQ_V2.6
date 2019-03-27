@@ -28,9 +28,9 @@
 #define  KEY_MESSEG  1
 #define  LCD_MESSEG  2
 #define  LIT_MESSEG  4
-#define  RF_MESSEG   5
+#define  RF_MESSEG   3
 #define  WK_MESSEG   7//Íø¿Ú
-#define  CFG_MESSEG  9
+#define  CFG_MESSEG  3
 
 //#define  ET_MESSEG   2
 

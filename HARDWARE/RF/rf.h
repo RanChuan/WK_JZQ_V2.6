@@ -60,8 +60,6 @@
 
 
 
-				//设置无线发送焦点
-void RF_SetFocus(u8 focus);
 
 
 
