@@ -26,7 +26,7 @@
 
 
 //1使用旧版，0使用新版，旧版串口屏设置是以1mg/m3为单位，新版以0.1mg/m3为单位
-#define __USE_OLD   1
+#define __USE_OLD   0
 
 u8 HANDING=0;//手动操作是否在进行
 
@@ -49,10 +49,7 @@ void my_rf_loop (void * t)
 	USART1_SetFocus(OSPrioHighRdy);
 	
 	
-	Load_Config();
-	load_test_cfg(); 
 	RF_SetChannel(Get_MyChanel()); 
-	//write_config(); //写入配置到文件
 	Updata_DeviceNum();
 	while (1)
 	{
@@ -214,75 +211,6 @@ void rf_cjq_deal(u8 *data)
 
 
 
-		//加载默认配置信息
-void load_test_cfg(void)
-{
-	
-	//如果没有配置，加载默认的
-	if (EN_CONFIG[0]==0)
-	{
-		EN_CONFIG[0]=1;
-		EN_CONFIG[1]=0;
-		EN_CONFIG[2]=2;
-		EN_CONFIG[3]=1;
-		EN_CONFIG[4]=3;
-		EN_CONFIG[5]=3;
-		EN_CONFIG[6]=33;
-		EN_CONFIG[7]=1;
-		EN_CONFIG[8]=34;
-		EN_CONFIG[9]=1;
-		EN_CONFIG[10]=35;
-		EN_CONFIG[11]=1;
-		EN_CONFIG[12]=36;
-		EN_CONFIG[13]=1;
-		
-		//本机地址
-		Get_MyIP()[0]=192;
-		Get_MyIP()[1]=168;
-		Get_MyIP()[2]=2;
-		Get_MyIP()[3]=13;
-		
-		//服务器地址
-		Get_MyIP()[6]=192;
-		Get_MyIP()[7]=168;
-		Get_MyIP()[8]=2;
-		Get_MyIP()[9]=56;
-
-		Get_MyIP()[10]=6000>>8;
-		Get_MyIP()[11]=6000&0x00ff;
-		
-		//网关IP
-		Get_MyIP()[12]=192;
-		Get_MyIP()[13]=168;
-		Get_MyIP()[14]=2;
-		Get_MyIP()[15]=1;
-
-		Save_Config();
-	}
-	
-	//没有本机名称
-	if (*getMyName()==0)
-	{
-		char *txtbuff=mymalloc(512);
-		sprintf(txtbuff,"%.6s-%02X%02X%02X","WK_JZQ",MCU_SN[9],MCU_SN[10],MCU_SN[11]);
-		setMyName (txtbuff);
-		myfree (txtbuff);
-	}
-	//默认一个超调量
-	if (getAutoCtrlAmount()==0)
-	{
-		setAutoCtrlAmount(2);
-	}
-	if (getWarnTolerance()==0)
-	{
-		setWarnTolerance(2);
-	}
-	//默认一个控制频率
-	if (getAutoCtrlFrequency()==0)
-	{
-		setAutoCtrlFrequency(30);
-	}
-}
 
 
 

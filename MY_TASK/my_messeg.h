@@ -192,7 +192,7 @@
 									meg[0]=LCD_BEEP时
 										LCD_BEEP_SHORT
 										LCD_BEEP_LONG
-		meg2，亮或灭第几个,控制电源开的时候屏幕亮度
+		meg2，亮或灭第几个,控制电源开的时候屏幕亮度,0xff,转换状态
 						取值：meg[0]=	LCD_DEVICE_STATE时
 										LCD_WENDU_UP
 										LCD_WENDU_DOWN

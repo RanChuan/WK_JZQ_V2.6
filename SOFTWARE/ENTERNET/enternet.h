@@ -34,7 +34,7 @@ typedef struct
 	
 }net_parameters;
 
-//等待发送完成
+//等待TCP发送完成
 u8 net_wailt_sended(u8 socket);
 
 //通过udp网络发送数据，需提供目的地ip地址和端口

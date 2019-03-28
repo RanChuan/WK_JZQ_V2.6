@@ -38,7 +38,7 @@ int main(void)
 	
 	SysPowerOn();
 	
-	CreateTask (my_topmsg, 				0, &my_keytack[63],				0)	;					
+	CreateTask (my_topmsg, 			0, &my_keytack[63],				0)	;					
 	CreateTask (my_lcd, 				0, &my_lcdtack[127],			2)	;	 				
 	CreateTask (my_rf_loop, 		0, &rf_looptack[255],			3)	;	 				
 	CreateTask (my_light, 			0, &my_lighttack[127],		4)	;		
@@ -52,7 +52,9 @@ int main(void)
 	
 
 	
-	OSStart ( );   
+	OSStart ( ); 
+	SysPowerOff();
+  
 }
 
 

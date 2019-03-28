@@ -603,6 +603,11 @@ void Socket_Init(SOCKET s)
 	Write_W5500_SOCK_2Byte(0, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
 	Write_W5500_SOCK_2Byte(1, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
 	Write_W5500_SOCK_2Byte(2, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
+	Write_W5500_SOCK_2Byte(3, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
+	Write_W5500_SOCK_2Byte(4, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
+	Write_W5500_SOCK_2Byte(5, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
+	Write_W5500_SOCK_2Byte(6, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
+	Write_W5500_SOCK_2Byte(7, Sn_MSSR, 1460);//最大分片字节数=1460(0x5b4)
 }
 
 /*******************************************************************************

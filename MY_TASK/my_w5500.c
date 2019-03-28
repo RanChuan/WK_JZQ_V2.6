@@ -115,7 +115,7 @@ void sys_test (void)
 	buff=mymalloc(2048);
 	while (test)
 	{
-		//SPI_Flash_Read (buff,flashaddr,2048);
+		SPI_Flash_Read (buff,flashaddr,2048);
 		
 	}
 	myfree(buff);

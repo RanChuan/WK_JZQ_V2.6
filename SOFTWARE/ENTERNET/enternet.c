@@ -228,7 +228,7 @@ void net_set_myip(u8 *myip)
 	Write_W5500_nByte(SIPR,myip,4);	
 }
 
-	//设置目的地IP地址及端口
+//设置目的地IP地址及端口
 void net_set_disip(u8 socket,u8 *disip,u16 discom,u16 mycom)
 {
 	

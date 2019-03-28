@@ -18,11 +18,15 @@
 void my_topmsg (void *);
 
 
+/*****************供外部任务调用的API********************/
 		
+//添加软件定时器
 u8 addSoftTimerIrq10ms (void (*irq)(void));
 		
+//移除指定软件定时器
 u8 delSoftTimerIrq10ms (void (*irq)(void));
 		
+/***************供外部任务调用的API End******************/
 		
 		
 		

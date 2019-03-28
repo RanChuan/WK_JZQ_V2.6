@@ -14,28 +14,28 @@
 
 
 //定义各种中断唤醒的值		
-#define SYS_MSG_KEY					(SYS_MSG|1)		//按键输入中断
-#define SYS_MSG_USART2   		(SYS_MSG|2)		//串口2中断，接LCD屏
-#define SYS_MSG_USART1			(SYS_MSG|3)		//串口1中断，接RF
-#define SYS_MSG_TIMER				(SYS_MSG|4)		//软件定时器，10ms
-#define SYS_MSG_W5500				(SYS_MSG|5)		//网络中断
+#define SYS_MSG_KEY					(0x1)		//按键输入中断
+#define SYS_MSG_USART2   		(0x2)		//串口2中断，接LCD屏
+#define SYS_MSG_USART1			(0x4)		//串口1中断，接RF
+#define SYS_MSG_TIMER				(0x8)		//软件定时器，10ms
+#define SYS_MSG_W5500				(0x10)		//网络中断
 
-#define TASK_MSG_KEY				(TASK_MSG|1)		//按键输入中断
-#define TASK_MSG_USART2   	(TASK_MSG|2)		//串口2中断，接LCD屏
-#define TASK_MSG_USART1			(TASK_MSG|3)		//串口1中断，接RF
-#define TASK_MSG_TIMER			(TASK_MSG|4)		//软件定时器，10ms
-#define TASK_MSG_W5500			(TASK_MSG|5)		//网络中断
+#define TASK_MSG_KEY				(0x1)		//按键输入中断
+#define TASK_MSG_USART2   	(0x2)		//串口2中断，接LCD屏
+#define TASK_MSG_USART1			(0x4)		//串口1中断，接RF
+#define TASK_MSG_TIMER			(0x8)		//软件定时器，10ms
+#define TASK_MSG_W5500			(0x10)		//网络中断
 
 //网络端口消息定义
-#define W5500_SOCKET        (TASK_MSG|0x0100)
-#define W5500_SOCKET0				(W5500_SOCKET|0)
-#define W5500_SOCKET1				(W5500_SOCKET|1)
-#define W5500_SOCKET2				(W5500_SOCKET|2)
-#define W5500_SOCKET3				(W5500_SOCKET|3)
-#define W5500_SOCKET4				(W5500_SOCKET|4)
-#define W5500_SOCKET5				(W5500_SOCKET|5)
-#define W5500_SOCKET6				(W5500_SOCKET|6)
-#define W5500_SOCKET7				(W5500_SOCKET|7)
+#define W5500_SOCKET        (0)
+#define W5500_SOCKET0				(W5500_SOCKET|0x20)
+#define W5500_SOCKET1				(W5500_SOCKET|0x40)
+#define W5500_SOCKET2				(W5500_SOCKET|0x80)
+#define W5500_SOCKET3				(W5500_SOCKET|0x100)
+#define W5500_SOCKET4				(W5500_SOCKET|0x200)
+#define W5500_SOCKET5				(W5500_SOCKET|0x400)
+#define W5500_SOCKET6				(W5500_SOCKET|0x800)
+#define W5500_SOCKET7				(W5500_SOCKET|0x1000)
 
 
 void USART1_SetFocus(u8 focus);

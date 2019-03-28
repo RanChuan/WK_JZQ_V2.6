@@ -383,10 +383,11 @@ u8 addDevAddr ( u8 dev,u16 addr )
 u8 delDevAddr (u16 addr)
 {
 	//0，表地址，1，高八位表状态，第八位表类型
-	for (u16 i=0;i<50;i++)
+	for (u16 i=1;i<50;i++)
 	{
 		if (EN_CONFIG[i*2]==addr)
 		{
+			EN_CONFIG[i*2]=0;						//移除当前设备
 			EN_CONFIG[i*2+1]=0;						//移除当前设备
 			EN_CONFIG[i*2+1]|=0x8000;
 			for (u16 j=i;j<50-i;j++)			//把后面的设备移到前面来

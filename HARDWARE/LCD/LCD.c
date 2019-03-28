@@ -151,7 +151,6 @@ void LCD_Send_Data(u8 *buf,u8 len)
 void LCD_Receive_Data(u8 *buf,u16 *len)
 {
 	u8 rxlen=USART2_RX_CNT;
-	u8 i=0;
 	*len=USART2_RX_CNT;				//д╛хон╙0
 	if (USART2_IDLE==1)
 	{
