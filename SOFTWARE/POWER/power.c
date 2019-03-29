@@ -19,7 +19,7 @@ void Sys_Init(void);
 void SysPowerOn (void)
 {
 	Sys_Init();
-	if (os_init()!=0) { Load_down();
+	if (os_init()!=0) { Load_up();
 	}//不为0初始化失败，一般是文件系统失败
 	RTC_Init();
 	IWDG_Init(16000);

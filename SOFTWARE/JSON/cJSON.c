@@ -24,7 +24,7 @@
 /* JSON parser in C. */
 
 
-#define MY_NUMTOSTR //使用自己的数字转字符串函数,以防使用sprintf导致的浮点数输出始终为0的情况
+//#define MY_NUMTOSTR //使用自己的数字转字符串函数,以防使用sprintf导致的浮点数输出始终为0的情况
 
 #include <string.h>
 #include <stdio.h>

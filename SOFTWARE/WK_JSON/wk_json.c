@@ -829,8 +829,9 @@ u8 send_json_cj (u8 *msg)
 			cJSON_AddItemToObject(root,"data", js_collect = cJSON_CreateObject());
 			cJSON_AddNumberToObject(js_collect,"wd",data[17]+data[18]/10.0);
 			cJSON_AddNumberToObject(js_collect,"sd",data[19]+data[20]/10.0);
-			cJSON_AddNumberToObject(js_collect,"pm25",0);
 			cJSON_AddNumberToObject(js_collect,"tvoc",data[21]+data[22]/10.0);
+			cJSON_AddNumberToObject(js_collect,"pm25",data[23]+data[24]/10.0);
+			cJSON_AddNumberToObject(js_collect,"co2",(data[25]<<8)|data[26]);
 		}
 	
 

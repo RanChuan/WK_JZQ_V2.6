@@ -1263,6 +1263,15 @@ void Beep_Play (jianpu *jianpu_)
 }
 
 
+//结束蜂鸣器音乐
+void Beep_End (void)
+{
+	myfree(sond);
+	sond=0;
+	BEEP=0;
+	BEEP_BUSY=0;
+	delTimerIrq10us(Beep_Run);
+}
 
 	
 void Beep_Run(void)
@@ -1303,7 +1312,6 @@ void Beep_Run(void)
 				sond=0;
 				BEEP=0;
 				BEEP_BUSY=0;
-				//TIM_Cmd(TIM2, DISABLE);  //关闭定时器	
 				delTimerIrq10us(Beep_Run);
 			}
 		}

@@ -34,6 +34,8 @@ u8 HANDING=0;//手动操作是否在进行
 void rf_loop (u16 i);
 void rf_send (u16 i);
 void rf_hand (u8 *msg);
+//发送设备故障报警，地址，设备类型，故障值
+void rf_deverr (u16 addr,u8 devtype,u8 d);
 
 
 
@@ -96,14 +98,19 @@ void rf_loop (u16 i)
 			EN_CONFIG[i*2+1]|=DEVICEON;
 
 			//模拟收到了消息
-			rf_recv[0]=0xff;
-			rf_recv[1]=0xff;
-			rf_recv[2]=EN_CONFIG[i*2]>>8;
-			rf_recv[3]=EN_CONFIG[i*2];
-
-			rf_cjq_deal(rf_recv);
+			//			rf_recv[0]=0xff;
+			//			rf_recv[1]=0xff;
+			//			rf_recv[2]=EN_CONFIG[i*2]>>8;
+			//			rf_recv[3]=EN_CONFIG[i*2];
+			
+			if (rf_recv[7+9])			//传感器故障
+			{
+				rf_deverr ((rf_recv[2]<<8)|rf_recv[3],devTypeCjq,rf_recv[7+9]);
+				delay_ms(1000);
+			}
 			if (EN_DATA[1]!=0xff)
 			copy_data(rf_recv,EN_DATA,rf_recv[6]+7);
+			rf_cjq_deal(rf_recv);
 		}
 		else 
 		{
@@ -158,6 +165,22 @@ void rf_loop (u16 i)
 
 
 
+//发送设备故障报警，地址，设备类型，故障值
+void rf_deverr (u16 addr,u8 devtype,u8 d)
+{
+	u8 send[MESSEG_DATA]={0};
+	send[0]=7;
+	send[1]=7;//错误类型，设备故障
+	send[2]=devtype;
+	send[3]=addr>>8;
+	send[4]=addr;
+	send[5]=d;
+		if (find_messeg(WK_MESSEG)==0)
+	send_messeg(WK_MESSEG,send);
+
+}
+
+
 
 
 
@@ -198,10 +221,10 @@ void rf_cjq_deal(u8 *data)
 		send_messeg(LCD_MESSEG,send);//发送给屏幕显示
 		
 		send[0]=2;send[1]=1;send[2]=0;//发送采集器的数据
-		send[3]=((u32 )data>>24);	//设置地址
-		send[4]=((u32 )data>>16);
-		send[5]=((u32 )data>>8);
-		send[6]=((u32 )data);
+		send[3]=((u32 )EN_DATA>>24);	//设置地址
+		send[4]=((u32 )EN_DATA>>16);
+		send[5]=((u32 )EN_DATA>>8);
+		send[6]=((u32 )EN_DATA);
 		if (find_messeg(WK_MESSEG)==0)
 			send_messeg(WK_MESSEG,send);//发送给网口
 		data[0]=0;
@@ -942,7 +965,7 @@ u16 Cmd_0x01 (u16 addr ,u8 *recv)
 	data[5]=0x00;
 	data[6]=0x02;
 	data[7]=0x00;
-	data[8]=16;//想要获取15位数据
+	data[8]=20;//想要获取20位数据，包括PM2.5，CO2
 	Get_Crc16(data,9,crc);
 	data[9]=crc[0];
 	data[10]=crc[1];
@@ -951,7 +974,7 @@ u16 Cmd_0x01 (u16 addr ,u8 *recv)
 	for(i=0;i<5;i++)
 	{
 		delay_ms(200);
-		if (RF_GetCmd (recv,16+9))
+		if (RF_GetCmd (recv,data[8]+9))
 		{
 			Get_Crc16(recv,recv[6]+7,crc);
 			if (crc[0]==recv[recv[6]+7]&&crc[1]==recv[recv[6]+8])//crc校验通过
@@ -962,7 +985,6 @@ u16 Cmd_0x01 (u16 addr ,u8 *recv)
 				}
 			}
 		}
-		
 	}
 	return ERR_TIMEOUT;
 }

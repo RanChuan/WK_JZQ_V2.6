@@ -20,6 +20,7 @@ typedef struct
 void BEEP_Init(void);
 
 void Beep_Play (jianpu *jianpu_);
+void Beep_End (void);
 
 void set_jianpu(jianpu *j,char *tone_,char *time_);
 void jianpu_end(jianpu *j);
