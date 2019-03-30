@@ -792,7 +792,7 @@ void Load_Net_Parameters(void)
 static u8 NET_STATE=0;
 static u8 NET_SOCKET_STATE[8]={0};
 
-
+#define W5500_IRQ_PIN PCin(4)
 
 //有中断就给网口任务发消息
 void EXTI4_IRQHandler(void)
@@ -841,44 +841,45 @@ void W5500_IRQ (void)
 
 		if((temp & S3_INT) == S3_INT)//Socket1事件处理 
 		{
-			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
-			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
-			NET_SOCKET_STATE[2]|=sntemp;
+			sntemp=Read_W5500_SOCK_1Byte(3,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(3,Sn_IR,sntemp);
+			NET_SOCKET_STATE[3]|=sntemp;
 			TaskIntSendMsg(0,W5500_SOCKET3);
 		}
 
 		if((temp & S4_INT) == S4_INT)//Socket1事件处理 
 		{
-			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
-			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
-			NET_SOCKET_STATE[2]|=sntemp;
+			sntemp=Read_W5500_SOCK_1Byte(4,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(4,Sn_IR,sntemp);
+			NET_SOCKET_STATE[4]|=sntemp;
 			TaskIntSendMsg(0,W5500_SOCKET4);
 		}
 
 		if((temp & S5_INT) == S5_INT)//Socket1事件处理 
 		{
-			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
-			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
-			NET_SOCKET_STATE[2]|=sntemp;
+			sntemp=Read_W5500_SOCK_1Byte(5,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(5,Sn_IR,sntemp);
+			NET_SOCKET_STATE[5]|=sntemp;
 			TaskIntSendMsg(0,W5500_SOCKET5);
 		}
 
 		if((temp & S6_INT) == S6_INT)//Socket1事件处理 
 		{
-			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
-			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
-			NET_SOCKET_STATE[2]|=sntemp;
+			sntemp=Read_W5500_SOCK_1Byte(6,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(6,Sn_IR,sntemp);
+			NET_SOCKET_STATE[6]|=sntemp;
 			TaskIntSendMsg(0,W5500_SOCKET6);
 		}
 
 		if((temp & S7_INT) == S7_INT)//Socket1事件处理 
 		{
-			sntemp=Read_W5500_SOCK_1Byte(2,Sn_IR);//读取Socket1中断标志寄存器
-			Write_W5500_SOCK_1Byte(2,Sn_IR,sntemp);
-			NET_SOCKET_STATE[2]|=sntemp;
+			sntemp=Read_W5500_SOCK_1Byte(7,Sn_IR);//读取Socket1中断标志寄存器
+			Write_W5500_SOCK_1Byte(7,Sn_IR,sntemp);
+			NET_SOCKET_STATE[7]|=sntemp;
 			TaskIntSendMsg(0,W5500_SOCKET7);
 		}
-	}while(Read_W5500_1Byte(SIR) != 0) ;
+	}while (W5500_IRQ_PIN==0);
+	//while(Read_W5500_1Byte(SIR) != 0) ;
 }
 
 

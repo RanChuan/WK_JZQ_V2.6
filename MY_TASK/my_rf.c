@@ -85,10 +85,11 @@ void my_rf_loop (void * t)
  
 
 
+void rf_cjq_to_data (u8 *rf_data);
 
 void rf_loop (u16 i)
 {
-	u8 rf_recv[40]={0};
+	u8 rf_recv[55]={0};
 	u16 ret;//返回值
 	ret=Cmd_0x01 (EN_CONFIG[i*2] ,rf_recv);
 	if (ret==0)//成功
@@ -97,19 +98,13 @@ void rf_loop (u16 i)
 		{
 			EN_CONFIG[i*2+1]|=DEVICEON;
 
-			//模拟收到了消息
-			//			rf_recv[0]=0xff;
-			//			rf_recv[1]=0xff;
-			//			rf_recv[2]=EN_CONFIG[i*2]>>8;
-			//			rf_recv[3]=EN_CONFIG[i*2];
 			
 			if (rf_recv[7+9])			//传感器故障
 			{
 				rf_deverr ((rf_recv[2]<<8)|rf_recv[3],devTypeCjq,rf_recv[7+9]);
 				delay_ms(1000);
 			}
-			if (EN_DATA[1]!=0xff)
-			copy_data(rf_recv,EN_DATA,rf_recv[6]+7);
+			rf_cjq_to_data(rf_recv);
 			rf_cjq_deal(rf_recv);
 		}
 		else 
@@ -182,6 +177,50 @@ void rf_deverr (u16 addr,u8 devtype,u8 d)
 
 
 
+//把无线的数据填充到采集器结构体中
+void rf_cjq_to_data (u8 *rf_data)
+{
+	cjq_data *cjqdata=GetCJDataAddr();
+	f_to_u t={0};
+	
+	//采集器地址
+	cjqdata->cjqId=(rf_data[2]<<8)|rf_data[3];
+	
+	//温度
+	t.u[0]=rf_data[7+10];
+	t.u[1]=rf_data[7+11];
+	t.u[2]=rf_data[7+12];
+	t.u[3]=rf_data[7+13];
+	cjqdata->temp=t.f;
+	
+	//湿度
+	t.u[0]=rf_data[7+14];
+	t.u[1]=rf_data[7+15];
+	t.u[2]=rf_data[7+16];
+	t.u[3]=rf_data[7+17];
+	cjqdata->humi=t.f;
+
+	//TVOC
+	t.u[0]=rf_data[7+18];
+	t.u[1]=rf_data[7+19];
+	t.u[2]=rf_data[7+20];
+	t.u[3]=rf_data[7+21];
+	cjqdata->tvoc=t.f;
+	
+	t.u[0]=rf_data[7+22];
+	t.u[1]=rf_data[7+23];
+	t.u[2]=rf_data[7+24];
+	t.u[3]=rf_data[7+25];
+	cjqdata->co2=t.f;
+	
+	t.u[0]=rf_data[7+26];
+	t.u[1]=rf_data[7+27];
+	t.u[2]=rf_data[7+28];
+	t.u[3]=rf_data[7+29];
+	cjqdata->pm2_5=t.f;
+
+}
+
 
 
 
@@ -205,18 +244,25 @@ void loushui_warn(u16 addr,u8 devtype)
 void rf_cjq_deal(u8 *data) 
 {
 	u16 temp=0;
+	cjq_data *t=GetCJDataAddr();
 	u8 send[MESSEG_DATA]={0};
 	
 	
-		temp=data[17]*10+data[18];//原数据*10,温度
+		//temp=data[17]*10+data[18];//原数据*10,温度
+		temp=t->temp*10;
 		send[0]=4;send[3]=temp>>8;send[4]=temp;
+	
 #if __USE_OLD == 0
-		temp=data[19]*10+data[20];//原数据，湿度
+		//temp=data[19]*10+data[20];//原数据，湿度
+		temp=t->humi*10;
 #else
-		temp=data[19];//原数据，湿度
+		//temp=data[19];//原数据，湿度
+		temp=t->humi;
 #endif
 		send[5]=temp>>8;send[6]=temp;
-		temp=data[21]*10+data[22];
+	
+		//temp=data[21]*10+data[22];
+		temp=t->tvoc*10;
 		send[7]=temp>>8;send[8]=temp;
 		send_messeg(LCD_MESSEG,send);//发送给屏幕显示
 		
@@ -965,7 +1011,7 @@ u16 Cmd_0x01 (u16 addr ,u8 *recv)
 	data[5]=0x00;
 	data[6]=0x02;
 	data[7]=0x00;
-	data[8]=20;//想要获取20位数据，包括PM2.5，CO2
+	data[8]=30;//想要获取20位数据，包括PM2.5，CO2
 	Get_Crc16(data,9,crc);
 	data[9]=crc[0];
 	data[10]=crc[1];

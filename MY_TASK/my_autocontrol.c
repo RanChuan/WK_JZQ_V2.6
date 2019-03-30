@@ -36,7 +36,7 @@ u8 ctrl_air (float now_tvoc);
 void my_autocontrol (void * t)
 {
 	u8 m_send[MESSEG_DATA]={0};
-	u8 *cj_data;
+	cjq_data *cj_data;
 	float now_temp;//环境值变量改为浮点型，比较时比较小数，2018.11.19
 	float now_humi;
 	float now_tvoc;
@@ -46,10 +46,10 @@ void my_autocontrol (void * t)
 	while (1)
 	{
 		delay_ms(getAutoCtrlFrequency()*1000+1);//每30秒执行一次自动判断
-		if (cj_data[1]!=0xff) continue;
-		now_temp=cj_data[17]+cj_data[18]/10.;//传入小数，2018.11.19
-		now_humi=cj_data[19]+cj_data[20]/10.;
-		now_tvoc=cj_data[21]+cj_data[22]/10.;
+		if (cj_data->cjqId==0) continue;
+		now_temp=cj_data->temp;//传入小数，2018.11.19
+		now_humi=cj_data->humi;
+		now_tvoc=cj_data->tvoc;
 
 		#if __USE_OLD==0
 				now_tvoc=now_tvoc*10;//TVOC上限是乘以10之后的数据，在这里把tvoc数据*10后比较,2018.11.19

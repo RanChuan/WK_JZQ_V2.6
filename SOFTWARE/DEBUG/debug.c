@@ -24,7 +24,7 @@ static u8 DBG_IAP=0;
 void my_debug (void)
 {
 	
-	if (net_get_comstate(1)==SOCK_CLOSED)
+	if (net_get_comstate(1)!=SOCK_UDP)
 	{
 		if (udp_init(1,NativeDbgPort))
 		{
@@ -890,7 +890,7 @@ void dbg_set_adddev (u8 *chars)
 	{
 		u16 id=0;
 		id=str2num(chars+4);
-		if (addDevAddr (devTypeKt, id)==0)
+		if (addDevAddr (devTypeYtj, id)==0)
 		{
 			Save_Config();
 			sprintf (txtbuff,"已添加地址为：%d 的一体机控制器\r\n",id);

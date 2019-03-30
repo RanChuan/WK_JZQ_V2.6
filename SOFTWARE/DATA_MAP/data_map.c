@@ -104,8 +104,8 @@ void Load_LCD(void)
 						//这个数组通过初始化函数填充
 static u16 DEVICE_NUM[DEVICE_DATA_NUM]={1,1,1,3,1,2,1,4,1,5};
 					//采集器的数据
-static u8 EN_DATA_[30]={0};
-
+//static u8 EN_DATA_[30]={0};
+static cjq_data CJQ_DATA={0};
 
 
 /***************************************************************
@@ -338,9 +338,9 @@ void Set_Device(u8 * data,u16 len)
 
 
 //获取采集器数据首地址
-u8 *GetCJDataAddr (void)
-{
-	return EN_DATA_;
+cjq_data *GetCJDataAddr (void)
+{ 
+	return &CJQ_DATA;
 }
 
 

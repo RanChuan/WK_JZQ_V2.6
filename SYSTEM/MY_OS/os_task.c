@@ -291,9 +291,9 @@ INT32U TaskGetMsg(void)
 	
 					//高优先级任务主动释放CPU在这里进行任务跳转
 	ToggleTasks();
-	while(!TASK_Free);
-	msg=TCB_Table[OSPrioHighRdy].MYWork;
+	while(!TASK_Free){};
 	OS_ENTER_CRITICAL(); 
+	msg=TCB_Table[OSPrioHighRdy].MYWork;
 	TCB_Table[OSPrioHighRdy].MYWork=0;//清除自身的消息
 	OS_EXIT_CRITICAL();	
 	return msg;

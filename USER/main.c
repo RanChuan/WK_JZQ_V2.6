@@ -52,6 +52,9 @@ int main(void)
 	
 
 	
+	
+	
+	
 	OSStart ( ); 
 	SysPowerOff();
   

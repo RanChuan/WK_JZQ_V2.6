@@ -29,6 +29,33 @@
 
 
 
+//无损转换float型变量
+typedef union
+{
+	float f;
+	u8 u[4];
+} f_to_u;
+
+//采集器传感数据
+typedef struct
+{
+	u16 cjqId;
+	float temp;		//单位℃
+	float humi;		//单位％
+	float tvoc;		//单位ppm
+	float co2;		//单位ppm
+	float pm2_5;	//单位mg/m3
+} cjq_data;
+
+
+
+
+
+
+
+
+
+
 //我加的用于存储配置信息的函数
 void Save_Config (void);
 void Load_Config(void);
@@ -84,7 +111,7 @@ u16 *GetCfgData (void);
 
 
 //获取采集器数据首地址
-u8 *GetCJDataAddr (void);
+cjq_data *GetCJDataAddr (void);
 
 //获取本机地址
 u16 Get_MyAddr(void);
@@ -198,6 +225,7 @@ void Lcd_SetHandstate (u16 handstate);
 u16 *getLcdCfgData (void);
 
 //---------------------供外部调用的函数End-------------------
+
 
 
 

@@ -788,17 +788,17 @@ u8 send_json_cj (u8 *msg)
 	
 	
 				//我使用的变量
-	u8 * data;//采集器数据缓存地址
+	cjq_data * data;//采集器数据缓存地址
 	u16 id;
 	
-	data=(u8 *)((msg[3]<<24)|(msg[4]<<16)|(msg[5]<<8)|(msg[6]));//取得地址
+	data=(cjq_data *)((msg[3]<<24)|(msg[4]<<16)|(msg[5]<<8)|(msg[6]));//取得地址
 	if (msg[2]==1)
 	{
 		id=(msg[7]<<8)|msg[8];
 	}
 	else
 	{
-		id=(data[2]<<8)|data[3];
+		id=data->cjqId;
 	}
 	
 
@@ -827,11 +827,11 @@ u8 send_json_cj (u8 *msg)
 		{
 			cJSON_AddStringToObject(root,"devState","on");
 			cJSON_AddItemToObject(root,"data", js_collect = cJSON_CreateObject());
-			cJSON_AddNumberToObject(js_collect,"wd",data[17]+data[18]/10.0);
-			cJSON_AddNumberToObject(js_collect,"sd",data[19]+data[20]/10.0);
-			cJSON_AddNumberToObject(js_collect,"tvoc",data[21]+data[22]/10.0);
-			cJSON_AddNumberToObject(js_collect,"pm25",data[23]+data[24]/10.0);
-			cJSON_AddNumberToObject(js_collect,"co2",(data[25]<<8)|data[26]);
+			cJSON_AddNumberToObject(js_collect,"wd",data->temp);
+			cJSON_AddNumberToObject(js_collect,"sd",data->humi);
+			cJSON_AddNumberToObject(js_collect,"tvoc",data->tvoc);
+			cJSON_AddNumberToObject(js_collect,"pm25",data->pm2_5);
+			cJSON_AddNumberToObject(js_collect,"co2",data->co2);
 		}
 	
 
