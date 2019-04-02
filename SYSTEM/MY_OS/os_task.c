@@ -285,7 +285,7 @@ INT32U TaskGetMsg(void)
 	#endif
 	u32 msg=0;
 	OS_ENTER_CRITICAL(); 
-	if (TCB_Table[OSPrioHighRdy].MYWork==0)
+	if (TCB_Table[OSPrioHighRdy].MYWork==0)//做此判断用于支持自己给自己发消息
 		Task_DelFree(OSPrioHighRdy);
 	OS_EXIT_CRITICAL();
 	

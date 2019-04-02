@@ -36,7 +36,7 @@ u16 SERVER_PORT=6000;
 //通过udp网络发送数据，需提供目的地ip地址和端口
 u8 udp_send(SOCKET s,u8 *ip,u16 com,u8 *databuff,u16 size)
 {
-		OS_ENTER_ONLYME();
+	OS_ENTER_ONLYME();
 
 	if((Read_W5500_SOCK_1Byte(s,Sn_MR)&0x0f) != SOCK_UDP)//如果Socket打开失败
 	{		
@@ -45,7 +45,7 @@ u8 udp_send(SOCKET s,u8 *ip,u16 com,u8 *databuff,u16 size)
 	}
 	
 	Write_SOCK_Data_Buffer(s, databuff,size);		
-		OS_EXIT_ONLYME();
+	OS_EXIT_ONLYME();
 	return 0;
 }
 
@@ -53,7 +53,6 @@ u8 udp_send(SOCKET s,u8 *ip,u16 com,u8 *databuff,u16 size)
 u8 udp_init(SOCKET s,u16 mycom)
 {
 	u8 ret=FALSE;
-	//OS_ENTER_ONLYME();
 
 	//设置端口0的端口号
 	Write_W5500_SOCK_2Byte(s, Sn_PORT,mycom);
@@ -68,7 +67,6 @@ u8 udp_init(SOCKET s,u16 mycom)
 	}
 	else
 		ret= TRUE;
-	//OS_EXIT_ONLYME();
 	return ret;
 }
 
@@ -82,7 +80,6 @@ u8 tcp_connect(SOCKET s,u16 mycom,u8 *ip,u16 com)
 		return FALSE;//ip地址不合法，失败
 	}
 	
-//	OS_ENTER_ONLYME();
 	
 	//设置端口0的端口号
 	Write_W5500_SOCK_2Byte(s, Sn_PORT,mycom);
@@ -104,7 +101,6 @@ u8 tcp_connect(SOCKET s,u16 mycom,u8 *ip,u16 com)
 	}while(--i);
 	if (i==0)
 	{
-//		OS_EXIT_ONLYME();
 		return FALSE;
 	}
 	Write_W5500_SOCK_1Byte(s,Sn_CR,SN_CONNECT);//设置Socket为Connect模式
@@ -117,7 +113,7 @@ u8 tcp_connect(SOCKET s,u16 mycom,u8 *ip,u16 com)
 			break;
 		}
 	}while(--i);
-//	OS_EXIT_ONLYME();
+	
 	if (i==0)
 	{
 		return FALSE;
@@ -148,19 +144,17 @@ u8 tcp_close(SOCKET s)
 
 u8 udp_close(SOCKET s)
 {
-	OS_ENTER_ONLYME();
 	
 	Write_W5500_SOCK_1Byte(s,Sn_CR,SN_CLOSE);//设置Socket为Connect模式
 	u8 i=20;
 	do
 	{
-		Delay(5);//延时5ms
+		Delay(1);//延时5ms
 		if(Read_W5500_SOCK_1Byte(s,Sn_SR)==SOCK_CLOSED)//如果socket打开成功
 		{  
 			break;
 		}
 	}while(--i);
-	OS_EXIT_ONLYME();
 	
 	if (i==0)
 	{

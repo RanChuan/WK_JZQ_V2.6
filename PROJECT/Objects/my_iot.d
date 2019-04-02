@@ -63,4 +63,5 @@
 .\objects\my_iot.o: ..\SOFTWARE\ENTERNET\enternet.h
 .\objects\my_iot.o: ..\SOFTWARE\BAIDU_IOT\baidu_iot.h
 .\objects\my_iot.o: ..\MY_TASK\my_topmsg.h
+.\objects\my_iot.o: ..\HARDWARE\hard_irq.h
 .\objects\my_iot.o: ..\MY_TASK\my_iot.h

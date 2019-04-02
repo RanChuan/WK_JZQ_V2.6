@@ -107,6 +107,8 @@ void dbg_whos(u8 *buff);
 
 void dbg_find(u8 *buff);
 
+void dbg_key(u8 *buff);
+
 /**********÷¥––÷∏¡Ó****************/
 
 

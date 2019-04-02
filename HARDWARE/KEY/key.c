@@ -59,6 +59,26 @@ u8 Get_Key(u8 keynum)
 	return key_ret;
 }
 
+//设置按键状态，用于虚拟按键,0,成功，1,失败
+u8 Set_Key(u8 keynum,u8 action)
+{
+	if (keynum==0||keynum>6) return 1;
+	if (action>3) return 1;
+	if (KEYS[keynum-1]==PRESS_NONE)
+	{
+		KEYS[keynum-1]=action;
+		TaskSendMsg(0,SYS_MSG_KEY); 
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+
+
+
 
 //按键有效
 #define KEY_Effective (KEYS[0]||KEYS[1]||KEYS[2]||KEYS[3]||KEYS[4]||KEYS[5])

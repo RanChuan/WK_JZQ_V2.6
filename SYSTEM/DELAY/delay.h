@@ -10,6 +10,8 @@
 
 void delay_init(void);
 u32 delay_ms(u16 nms);
+u32 sleep_ms(u16 nms);
+
 void delay_us(u32 nus);
 
 

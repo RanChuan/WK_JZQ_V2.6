@@ -10,6 +10,7 @@
 #include "wk_json.h"
 #include "cmd.h"
 #include "iwdg.h"
+#include "key.h"
 #include "debug.h"
 
 
@@ -28,7 +29,7 @@ void my_debug (void)
 	{
 		if (udp_init(1,NativeDbgPort))
 		{
-			dbg_booting();
+			//dbg_booting();
 		}
 	}
 	
@@ -136,6 +137,10 @@ void dbg_Interpreter(u8 *recvbuff)
 	else if (samestr((u8*)"find ",recvbuff+8))
 	{
 		dbg_find(recvbuff+8+5); 
+	}
+	else if (samestr((u8*)"key",recvbuff+8))
+	{
+		dbg_key(recvbuff+8+3); 
 	}
 	else
 	{
@@ -369,6 +374,9 @@ void dbg_help(void)
 	ptxt="\t输入\"getip [域名]\"获取域名对应的IP地址\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
+	ptxt="\t输入\"key [键值] [动作]\"模拟按键事件\r\n";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
 	ptxt="\t输入\"reboot\"设备重启\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
@@ -970,6 +978,55 @@ void dbg_find(u8 *buff)
 	}
 	myfree(chars);
 }
+
+
+
+
+void dbg_key(u8 *buff)
+{
+	char *txtbuff=mymalloc(512);
+	char *ptxt=0;
+	if (*buff++==' ')
+	{
+		buff[1]=0;
+		u8 key=str2num(buff);
+		u8 action=PRESS_NONE;
+		if (samestr("short",buff+2))
+		{
+			action=PRESS_SHORT;
+		}
+		else if (samestr("long",buff+2))
+		{
+			action=PRESS_LONG;
+		}
+		else
+		{
+			
+		}
+		if (Set_Key (key,action)==0)
+		{
+			ptxt="设置键值成功\r\n";
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		}
+		else
+		{
+			ptxt="设置键值失败\r\n";
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		}
+	}
+	else
+	{
+		ptxt="键值取值范围是：1~6\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
+		ptxt="动作是：短按：short \\长按：long\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+	}
+	myfree(txtbuff);
+}
+
+
+
 
 
 

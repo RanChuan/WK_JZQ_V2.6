@@ -15,8 +15,20 @@ static u16 data_num=0;//当前数据包
 static u16 data_all=0;//总数据包
 
 
+//字节数一定要是偶数
+void cmd_flash_read(u8 *buff,u32 addr,u16 length)
+{
+	STMFLASH_Read(0x08000000+addr+1024*120,(u16 *)buff,length/2);
+}
+void cmd_flash_write(u8 *data,u32 addr,u16 length)
+{
+	STMFLASH_Write(0x08000000+addr+1024*120,(u16 *)data,length/2);
+}
 
 
+
+void (*p_Flash_Write)(u8 *data,u32 addr,u16 length);
+void (*p_Flash_Read)(u8 *buff,u32 addr,u16 length);
 
 
 
@@ -95,8 +107,15 @@ void write_flash (u8 *buff)
 	
 	if ((SPI_FLASH_TYPE&0xff00)!=0xef00)//本机没有检测到flash，不能iap升级
 	{
-		cmd_return(buff,ERR_FLASHADDR);
-		return ;
+		//cmd_return(buff,ERR_FLASHADDR);
+		//return ;
+		p_Flash_Read=cmd_flash_read;
+		p_Flash_Write=cmd_flash_write;
+	}
+	else 
+	{
+		p_Flash_Write=SPI_Flash_Write;
+		p_Flash_Read=SPI_Flash_Read;
 	}
 	
 	if (stm32addr<0x08002800)//写程序空间不能重写IAP所在的程序段
@@ -116,11 +135,11 @@ void write_flash (u8 *buff)
 	else
 	{
 		IapInfoDef iapinfo={0};							//更新iap信息
-		SPI_Flash_Read ((u8*)&iapinfo,0,sizeof (iapinfo));
+		p_Flash_Read ((u8*)&iapinfo,0,sizeof (iapinfo));
 		iapinfo.appFlashAddr=flash_addr;
 		iapinfo.appStm32Addr=stm32addr;
 		iapinfo.appSize=size;
-		SPI_Flash_Write ((u8*)&iapinfo,0,sizeof (iapinfo));
+		p_Flash_Write ((u8*)&iapinfo,0,sizeof (iapinfo));
 	}
 	data_num=0;
 	data_all=0;
@@ -205,8 +224,8 @@ void writting_flash (u8 *buff)
 				u8 *readbuff=mymalloc (2048);
 				do 
 				{
-					SPI_Flash_Write(data_buff,flash_addr,2048);
-					SPI_Flash_Read(readbuff,flash_addr,2048);
+					p_Flash_Write(data_buff,flash_addr,2048);
+					p_Flash_Read(readbuff,flash_addr,2048);
 					checktry--;
 					if (checktry==0) SysPowerOff();
 				}while (cheeckflash (readbuff,data_buff,2048));
@@ -219,7 +238,7 @@ void writting_flash (u8 *buff)
 		{
 			if (data_real()) 
 			{
-				SPI_Flash_Write(data_buff,flash_addr,data_offset);
+				p_Flash_Write(data_buff,flash_addr,data_offset);
 				data_offset=0;
 				flash_addr=0;
 				for (u16 j=0;j<2048;j++){data_buff[j]=0;}

@@ -66,6 +66,8 @@ void my_w5500 (void * t)
 	
 	u16 rest_time_w5500=0;
 	u16 rest_time_sys=0;
+	
+	
 	while(1)
 	{
 		delay_ms(100);
@@ -99,7 +101,7 @@ void my_w5500 (void * t)
 			}
 		}
 		my_debug ( );		//调试信息输出
-		wk_client();
+		//wk_client();
 	}
 }
 

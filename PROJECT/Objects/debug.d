@@ -70,4 +70,5 @@
 .\objects\debug.o: ..\SOFTWARE\WK_JSON\wk_json.h
 .\objects\debug.o: ..\SOFTWARE\CMD\cmd.h
 .\objects\debug.o: ..\SYSTEM\IWDG\iwdg.h
+.\objects\debug.o: ..\HARDWARE\KEY\key.h
 .\objects\debug.o: ..\SOFTWARE\DEBUG\debug.h

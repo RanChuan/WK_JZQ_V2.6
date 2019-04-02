@@ -61,7 +61,20 @@ u32 delay_ms(u16 nms)
 } 
 
 
-
+//强制睡眠，结束前不能被唤醒
+u32 sleep_ms(u16 nms)
+{	 
+ #if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		 OS_CPU_SR  cpu_sr;
+ #endif
+	u32 msg;
+	OS_ENTER_CRITICAL(); 
+	TCB_Table[OSPrioHighRdy].MYDelay_ms=nms/MICRO_MS+1;//根据延时毫秒数设置节拍
+	OS_EXIT_CRITICAL();
+	do{
+		msg|=TaskGetMsg();
+	}while((msg&DELAY_END)==0);
+} 
 
 
 
@@ -131,7 +144,7 @@ void SysTick_Handler (void)
 	}
 	RunTime_IRQHandler();
 	
-	cpuBreakIRQ();
+	//cpuBreakIRQ();
 }
 
 
