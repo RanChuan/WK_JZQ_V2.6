@@ -38,20 +38,29 @@ int main(void)
 	
 	SysPowerOn();
 	
-	CreateTask (my_topmsg, 			0, &my_keytack[127],				0)	;					
-	CreateTask (my_lcd, 				0, &my_lcdtack[127],			2)	;	 				
-	CreateTask (my_rf_loop, 		0, &rf_looptack[255],			3)	;	 				
-	CreateTask (my_light, 			0, &my_lighttack[127],		4)	;		
-//	CreateTask (my_rf_hand, 		0, &my_rf_handtack[255],	5)	;		
-//	CreateTask (my_rf_deal, 		0, &my_rf_dealtack[63],		6)	;		
-	CreateTask (my_w5500, 			0, &my_w5500tack[255],		7)	;		
-	CreateTask (my_autocontrol, 0, &my_autotack[127],			8)	;		
-//	CreateTask (my_cfg, 				0, &my_cfgtack[127],			9)	;		
-	CreateTask (my_iot, 				0, &my_iottack[255],		 10)	;		
-	CreateTask (idle_task, 			0, &my_idletack[63],		 31)	;		
+//	CreateTask (my_topmsg, 			0, &my_keytack[127],				0)	;					
+//	CreateTask (my_lcd, 				0, &my_lcdtack[127],			2)	;	 				
+//	CreateTask (my_rf_loop, 		0, &rf_looptack[255],			3)	;	 				
+//	CreateTask (my_light, 			0, &my_lighttack[127],		4)	;		
+////	CreateTask (my_rf_hand, 		0, &my_rf_handtack[255],	5)	;		
+////	CreateTask (my_rf_deal, 		0, &my_rf_dealtack[63],		6)	;		
+//	CreateTask (my_w5500, 			0, &my_w5500tack[255],		7)	;		
+//	CreateTask (my_autocontrol, 0, &my_autotack[127],			8)	;		
+////	CreateTask (my_cfg, 				0, &my_cfgtack[127],			9)	;		
+//	CreateTask (my_iot, 				0, &my_iottack[255],		 10)	;		
+//	CreateTask (idle_task, 			0, &my_idletack[63],		 31)	;		
+	
+	
+	CreateTaskN (my_topmsg, 			0, my_keytack,128,				0)	;					
+	CreateTaskN (my_lcd, 				0, my_lcdtack,128	,		2)	;	 				
+	CreateTaskN (my_rf_loop, 		0, rf_looptack,	256,		3)	;	 				
+	CreateTaskN (my_light, 			0, my_lighttack,128,		4)	;		
+	CreateTaskN (my_w5500, 			0, my_w5500tack,256,		7)	;		
+	CreateTaskN (my_autocontrol, 0, my_autotack,128,			8)	;		
+	CreateTaskN (my_iot, 				0, my_iottack,256,		 10)	;		
+	CreateTaskN (idle_task, 			0, my_idletack,64,		 31)	;		
 	
 
-	
 	
 	
 	

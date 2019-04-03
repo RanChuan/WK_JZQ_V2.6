@@ -18,8 +18,8 @@ void idle_task (void *t)
 	{
 		for (i=0;i<TASK_MAX_NUM;i++)
 		{
-			OS_ENTER_CRITICAL();
 			IWDG_Feed();
+			OS_ENTER_CRITICAL();
 			if (getSysRunTime()- TCB_Table[i].LastTime>60*2)
 			{
 				if (TCB_Table[i].pTask)

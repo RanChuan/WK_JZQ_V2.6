@@ -401,6 +401,9 @@ void dbg_help(void)
 	ptxt="\t输入\"task getidle\"查询运行异常的任务\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 
+	ptxt="\t输入\"task getusege\"查询任务栈使用情况\r\n";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
 	ptxt="\t向广播地址发送\"whos\"查询接入网络的集中器\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 
@@ -546,9 +549,25 @@ void dbg_task (u8 *buff)
 		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 		for (u8 i=0;i<TASK_MAX_NUM;i++)
 		{
-			getKilledTask(&lasttime,&dietimes,i);
-			sprintf(txtbuff,"优先级为 %2d 的任务死亡了 %2d 次，最后一次死亡时间是：%d\r\n",i,dietimes,lasttime);
-			udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+			if (GetTaskUsed(i))
+			{
+				getKilledTask(&lasttime,&dietimes,i);
+				sprintf(txtbuff,"优先级为 %2d 的任务死亡了 %2d 次，最后一次死亡时间是：%d\r\n",i,dietimes,lasttime);
+				udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+			}
+		}
+	}
+	else if ( samestr((u8*)"getusege",buff))
+	{
+		sprintf(txtbuff,"任务栈使用情况：\r\n");
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+		for (u8 i=0;i<TASK_MAX_NUM;i++)
+		{
+			if (GetTaskUsed(i))
+			{
+				sprintf(txtbuff,"优先级为 %2d 栈使用情况为 %2d /%d\r\n",i,GetTaskUsed(i),GetTaskSize(i)  );
+				udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
+			}
 		}
 	}
 	myfree(txtbuff);

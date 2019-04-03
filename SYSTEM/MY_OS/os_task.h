@@ -23,6 +23,8 @@ typedef struct
 	INT32U MYDelay_ms;//本次想延时的时间，单位，ms，
 	INT32U MYWork;//我的工作，不为0时系统调度这个任务
 	INT32U Pend;	//知否挂起
+	INT32U TackUsed;//栈使用率
+	OS_STK *TackInitial;//初始栈地址
 	INT32U LastTime;		//最后一次调度的时间
 }OS_TCB,*pOS_TCB;
 
@@ -37,12 +39,13 @@ extern       pOS_TCB OSTCBHighRdy;
 extern        INT32U  OSIntNesting;
 extern        INT32U  OSIntExit;
 
-//extern INT32U TASK_THIS;//记录活跃的进程
 
 
 
 #define TASK_MAX_NUM 32u
 
+//任务未使用的栈默认值，用于做使用统计
+#define IDLE_TACK_VALUE 0xffffffff
 
 
 //定义任务结构体
@@ -61,6 +64,24 @@ extern INT32U  TASK_Free[TASK_MAX_NUM/32+1];
 
 
 INT8U CreateTask (void   (*task)(void *p_arg),void *p_arg,OS_STK  *ptos,INT8U prio)	;		
+
+INT8U CreateTaskN (void   (*task)(void *p_arg),//任务首地址
+                     void    *p_arg,					//任务参数
+                     OS_STK  *ptos_,						//任务堆栈地址顶，向下生长
+										 u32 tacksize,
+                     INT8U    prio);						//任务优先级
+
+
+//校验任务堆栈使用率
+void CheckTaskUsege ( void );
+										 
+//在任务切换时统计任务使用率
+void CheckHighRdyTaskUsege ( void );
+
+u16 GetTaskUsed (u8 prio);
+u16 GetTaskSize (u8 prio);
+
+
 
 void  OSStart (void);
 					//任务挂起

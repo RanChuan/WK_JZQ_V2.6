@@ -19,8 +19,8 @@
 
 
 
-#define LED_R PCout(7)
-#define LED_B PCout(8)
+#define LED_R PBout(0)
+#define LED_B PBout(1)
 //#define LIGHT_1 PBout(4)
 #define LIGHT_2 PBout(5)
 #define LIGHT_3 PBout(6)
@@ -675,7 +675,6 @@ void light_setcolor(u8 red,u8 green,u8 blue)
 	RED_LIGHT=red;
 	GREEN_LIGHT=green;
 	BLUE_LIGHT=blue;
-	
 	TIM3->CCR4=red;
 	TIM3->CCR3=green;
 }

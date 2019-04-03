@@ -25,6 +25,9 @@ pOS_TCB  OSTCBHighRdy;//优先级最高的TCB指针
 INT32U  OSIntNesting=7;   //进入中断的层数
 INT32U  OSIntExit=8;			//中断退出函数
 
+			//在这里统计任务栈使用情况
+void (*OSTaskSwHook)(void) =0;//CheckHighRdyTaskUsege;
+
 INT8U  OS_ONLYME=0;//禁止调度标志
 
  
@@ -53,6 +56,48 @@ void os_task_init (void)
 
 
 
+INT8U CreateTaskN (void   (*task)(void *p_arg),//任务首地址
+                     void    *p_arg,					//任务参数
+                     OS_STK  *ptos_,						//任务堆栈地址顶，向下生长
+										 u32 tacksize,
+                     INT8U    prio)						//任务优先级
+{
+#if TASK_MAX_NUM<=32u
+	INT32U myprio=0x80000000>>prio;
+#endif
+	OS_STK *psp;
+	
+	
+	OS_STK *ptos=ptos_+tacksize-1;
+	
+	
+	
+#if TASK_MAX_NUM<=32u
+	if (TASK_Free&myprio)
+	{
+		return 1;//返回错误，该优先级已经注册过
+	}
+	else
+	{
+		TASK_Free|=myprio;
+	}
+#endif
+	
+	for (u16 i=0;i<tacksize;i++)
+	{
+		*(ptos-i)=IDLE_TACK_VALUE;
+	}
+	
+	TCB_Table[prio].TackInitial=ptos;
+	psp=OSTaskStkInit(task,p_arg,ptos,0);//初始化任务堆栈，返回新栈顶
+	OS_TCBInit (task,psp,prio);
+	TCB_Table[prio].TackUsed=tacksize&0x0000ffff;
+	return 0;
+}
+
+
+
+
 INT8U CreateTask (void   (*task)(void *p_arg),//任务首地址
                      void    *p_arg,					//任务参数
                      OS_STK  *ptos,						//任务堆栈地址顶，向下生长
@@ -62,6 +107,10 @@ INT8U CreateTask (void   (*task)(void *p_arg),//任务首地址
 	INT32U myprio=0x80000000>>prio;
 #endif
 	OS_STK *psp;
+	
+	
+	
+	
 	
 #if TASK_MAX_NUM<=32u
 	if (TASK_Free&myprio)
@@ -78,6 +127,89 @@ INT8U CreateTask (void   (*task)(void *p_arg),//任务首地址
 	OS_TCBInit (task,psp,prio);
 	return 0;
 }
+
+
+
+
+u16 GetTaskSize (u8 prio)
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u16 size=0;
+	OS_ENTER_CRITICAL();
+	size=TCB_Table[prio].TackUsed&0x0000ffff;
+	OS_EXIT_CRITICAL();
+	return size;
+}
+
+
+u16 GetTaskUsed (u8 prio)
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u16 used=0;
+	OS_ENTER_CRITICAL();
+	used=TCB_Table[prio].TackUsed>>16;
+	OS_EXIT_CRITICAL();
+	return used;
+}
+
+
+//校验任务堆栈使用率
+void CheckTaskUsege ( void )
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u32 used=0;
+	u32 used_old=0;
+	u32 *tack_p=0;
+	OS_ENTER_CRITICAL();
+	for (u8 i=0;i<TASK_MAX_NUM;i++)
+	{
+		if (TCB_Table[i].pTask)
+		{
+			tack_p=TCB_Table[i].TackInitial-(TCB_Table[i].TackUsed&0x0000ffff)+1;
+			while(*tack_p++==IDLE_TACK_VALUE);
+			//used=TCB_Table[i].TackInitial- TCB_Table[i].pMYStack;
+			used=(TCB_Table[i].TackInitial- tack_p)+1;
+			used_old=TCB_Table[i].TackUsed>>16;
+			if (used_old<used)		//记录最大使用量
+			{
+				TCB_Table[i].TackUsed&=0x0000ffff;
+				TCB_Table[i].TackUsed|=used<<16;
+			}
+		}
+	}
+	OS_EXIT_CRITICAL();
+	
+}
+
+//在任务切换时统计任务使用率
+void CheckHighRdyTaskUsege ( void )
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u32 used=0;
+	u32 used_old=0;
+	OS_ENTER_CRITICAL();
+	if (TCB_Table[OSPrioHighRdy].pTask)
+	{
+		used=TCB_Table[OSPrioHighRdy].TackInitial- TCB_Table[OSPrioHighRdy].pMYStack;
+		used_old=TCB_Table[OSPrioHighRdy].TackUsed>>16;
+		if (used_old<used)		//记录最大使用量
+		{
+			TCB_Table[OSPrioHighRdy].TackUsed&=0x0000ffff;
+			TCB_Table[OSPrioHighRdy].TackUsed|=used<<16;
+		}
+	}
+	OS_EXIT_CRITICAL();
+	
+}
+
 
 
 			//初始化任务堆栈结构体，

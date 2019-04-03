@@ -13,7 +13,7 @@
         IMPORT  OSTCBHighRdy
         IMPORT  OSIntNesting
         IMPORT  OSIntExit
-;        IMPORT  OSTaskSwHook
+        IMPORT  OSTaskSwHook
            
         EXPORT  OSStartHighRdy               
         EXPORT  OSCtxSw
@@ -173,10 +173,13 @@ PendSV_Handler			;任务切换中断
 
                                                                 ; At this point, entire context of process has been saved
 PendSV_Handler_Nosave
-;    PUSH    {R14}                                               ; Save LR exc_return value
- ;   LDR     R0, =OSTaskSwHook                                   ; OSTaskSwHook();
- ;   BLX     R0
- ;   POP     {R14}					//没用到呀，，
+    PUSH    {R14}                                               ; Save LR exc_return value
+    LDR     R0, =OSTaskSwHook                                   ; OSTaskSwHook();
+	LDR     R0, [R0]
+	CBZ		R0,PendSV_Handler_NoTaskSwHook						;如果定义了栈统计钩子，跳转
+    BLX     R0
+PendSV_Handler_NoTaskSwHook
+    POP     {R14}												;没用到呀，，
 
     LDR     R0, =OSPrioCur                                      ; OSPrioCur = OSPrioHighRdy;
     LDR     R1, =OSPrioHighRdy

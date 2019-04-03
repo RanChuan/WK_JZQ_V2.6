@@ -143,7 +143,7 @@ void SysTick_Handler (void)
 		}
 	}
 	RunTime_IRQHandler();
-	
+	CheckTaskUsege();
 	//cpuBreakIRQ();
 }
 

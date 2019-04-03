@@ -101,7 +101,7 @@ void my_w5500 (void * t)
 			}
 		}
 		my_debug ( );		//调试信息输出
-		//wk_client();
+		wk_client();
 	}
 }
 
