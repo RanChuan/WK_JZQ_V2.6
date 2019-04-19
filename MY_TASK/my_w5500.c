@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "ntp.h"
 #include "power.h"
+#include "timer.h"
 #include "my_w5500.h"
 
 
@@ -41,8 +42,10 @@ u8 DBG_INTER_STATE=0;
 
 
 
-
-
+//检查服务器数据
+void check_server_data (void);
+static u32 W5500_TIMER=0;
+void w5500_rest_timer_irq (void);
 
 
 
@@ -56,6 +59,8 @@ void my_w5500 (void * t)
 	a.free_fn=myfree;
 	cJSON_InitHooks(&a);
 
+	//添加定时器
+	addTimerIrq10ms(w5500_rest_timer_irq);
 	
 	void sys_test (void);
 	sys_test();
@@ -66,6 +71,12 @@ void my_w5500 (void * t)
 	while(1)
 	{
 		delay_ms(100);
+		
+		
+		//10分钟没有收到服务器消息则重启
+		check_server_data();
+		
+		
 		if (net_get_phycstate()==0) 
 		{
 			rest_time_w5500++;
@@ -75,13 +86,18 @@ void my_w5500 (void * t)
 				net_sysboot_init();
 				rest_time_w5500=0;
 				rest_time_sys++;
-				if (rest_time_sys>=2*10)
+				if (rest_time_sys>=2*30)
 				{
-					//SysPowerOff();
+					SysPowerOff();
 				}
 			}
 			continue;//网线没有连接，执行下一次循环
 		}
+		
+		
+		
+		
+		
 		
 		if ((net_check_parameters()==0)||//本机ip地址不合法
 			(checkNetstate(CONFLICT)))//ip冲突
@@ -99,6 +115,41 @@ void my_w5500 (void * t)
 		wk_client();
 	}
 }
+
+
+
+
+
+
+
+//检查服务器数据
+void check_server_data (void)
+{
+	if (checkSocketStateN(0,IR_RECV))
+	{
+		W5500_TIMER=0;
+	}
+	else
+	{
+		if (W5500_TIMER>100*60*30)
+		{
+			SysPowerOff();
+		}
+	}
+}
+
+
+
+
+void w5500_rest_timer_irq (void)
+{
+	W5500_TIMER++;
+}
+
+
+
+
+
 
 
 
@@ -150,7 +201,7 @@ void wk_client(void)
 			if (net_check_gateway()==TRUE)
 			{
 				DBG_INTER_STATE=1;//连接上网关
-				serch_server();//查找服务器
+				//serch_server();//查找服务器
 				check_gateway_fail_time=0;
 			}
 			else

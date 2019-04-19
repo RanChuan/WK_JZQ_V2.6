@@ -19,6 +19,7 @@
 #define  MSG_TYPE 		0xff000000
 #define  SYS_MSG	 		0x01000000
 #define  TASK_MSG 		0x02000000
+#define  DELAY_END		0x80000000
 #define  GET_MSGTYPE(msg,type) (((msg)&(MSG_TYPE))==(type))//消息类型判定宏
 
 

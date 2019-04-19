@@ -83,12 +83,22 @@ void cmd_return (u8 * buff,u16 err);
 		
 void writting_flash (u8 *buff);
 		
-			//返回是否有数据，1，有数据
+//返回是否有数据，1，有数据
 u8 data_real(void);
 		
 void read_flash (u8 *buff);
 		
 void write_flash (u8 *buff);
+
+
+
+
+
+
+
+
+
+
 
 #ifdef __cplusplus
 	}

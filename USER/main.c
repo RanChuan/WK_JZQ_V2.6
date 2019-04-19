@@ -17,17 +17,17 @@
 
 
 //任务堆栈初始化，如果进入硬件中断，尝试将这些值改大
-u32 my_keytack[64];
-u32 my_lcdtack[128];
-u32 rf_looptack[256];
-u32 my_lighttack[128];
-u32 my_rf_handtack[256];
-u32 my_rf_dealtack[64];
-u32 my_w5500tack[256];
-u32 my_autotack[128];
-u32 my_cfgtack[128];
-u32 my_iottack[128];
-u32 my_idletack[32];
+__align(8) u32 my_keytack[64];
+__align(8) u32 my_lcdtack[128];
+__align(8) u32 rf_looptack[256];
+__align(8) u32 my_lighttack[128];
+__align(8) u32 my_rf_handtack[256];
+__align(8) u32 my_rf_dealtack[64];
+__align(8) u32 my_w5500tack[256];
+__align(8) u32 my_autotack[128];
+__align(8) u32 my_cfgtack[128];
+__align(8) u32 my_iottack[128];
+__align(8) u32 my_idletack[32];
 int main(void)
 {	
 	

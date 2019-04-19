@@ -10,8 +10,9 @@
 #include "wk_json.h"
 #include "cmd.h"
 #include "iwdg.h"
+#include "sysinfo.h"
+#include "key.h"
 #include "debug.h"
-
 
 
 
@@ -131,7 +132,11 @@ void dbg_Interpreter(u8 *recvbuff)
 	}
 	else if (samestr((u8*)"whos",recvbuff+8))
 	{
-		dbg_whos(recvbuff+8+3); 
+		dbg_whos(recvbuff+8+4); 
+	}
+	else if (samestr((u8*)"key",recvbuff+8))
+	{
+		dbg_key(recvbuff+8+3); 
 	}
 	else
 	{
@@ -177,8 +182,11 @@ void dbg_info (void)
   sprintf(txtbuff,"%.18s\r\n",getMyName());
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
 	
-	ptxt="本程序适配电路板版本：2018-10-22\r\n";
-	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen(ptxt));
+  sprintf(txtbuff,"软件版本：%.18s\r\n",JZQ_SoftVersion); 
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff)); 
+	
+  sprintf(txtbuff,"适配硬件版本：%.18s\r\n",JZQ_Version);
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff)); 
 	
 	sprintf(txtbuff,"本机IP地址：%d.%d.%d.%d\r\n",IP_Addr[0],IP_Addr[1],IP_Addr[2],IP_Addr[3]);
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)txtbuff,strlen(txtbuff));
@@ -365,6 +373,9 @@ void dbg_help(void)
 	ptxt="\t输入\"getip [域名]\"获取域名对应的IP地址\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
+	ptxt="\t输入\"key [键值] [动作]\"模拟按键事件\r\n";
+	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
 	ptxt="\t输入\"reboot\"设备重启\r\n";
 	udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
 	
@@ -948,6 +959,53 @@ void dbg_whos(u8 *buff)
 	myfree(chars);
 }
 
+
+
+
+
+
+void dbg_key(u8 *buff)
+{
+	char *txtbuff=mymalloc(512);
+	char *ptxt=0;
+	if (*buff++==' ')
+	{
+		buff[1]=0;
+		u8 key=str2num(buff);
+		u8 action=PRESS_NONE;
+		if (samestr("short",buff+2))
+		{
+			action=PRESS_SHORT;
+		}
+		else if (samestr("long",buff+2))
+		{
+			action=PRESS_LONG;
+		}
+		else
+		{
+			
+		}
+		if (Set_Key (key,action)==0)
+		{
+			ptxt="设置键值成功\r\n";
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		}
+		else
+		{
+			ptxt="设置键值失败\r\n";
+			udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+		}
+	}
+	else
+	{
+		ptxt="键值取值范围是：1~6\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+
+		ptxt="动作是：短按：short \\长按：long\r\n";
+		udp_send(1,DBG_IP,DBG_PORT,(u8*)ptxt,strlen((const char *)ptxt));
+	}
+	myfree(txtbuff);
+}
 
 
 

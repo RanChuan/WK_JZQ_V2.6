@@ -25,6 +25,9 @@ pOS_TCB  OSTCBHighRdy;//优先级最高的TCB指针
 INT32U  OSIntNesting=7;   //进入中断的层数
 INT32U  OSIntExit=8;			//中断退出函数
 
+			//在这里统计任务栈使用情况
+void (*OSTaskSwHook)(void) =0;//CheckHighRdyTaskUsege;
+
 INT8U  OS_ONLYME=0;//禁止调度标志
 
  
@@ -53,6 +56,48 @@ void os_task_init (void)
 
 
 
+INT8U CreateTaskN (void   (*task)(void *p_arg),//任务首地址
+                     void    *p_arg,					//任务参数
+                     OS_STK  *ptos_,						//任务堆栈地址顶，向下生长
+										 u32 tacksize,
+                     INT8U    prio)						//任务优先级
+{
+#if TASK_MAX_NUM<=32u
+	INT32U myprio=0x80000000>>prio;
+#endif
+	OS_STK *psp;
+	
+	
+	OS_STK *ptos=ptos_+tacksize-1;
+	
+	
+	
+#if TASK_MAX_NUM<=32u
+	if (TASK_Free&myprio)
+	{
+		return 1;//返回错误，该优先级已经注册过
+	}
+	else
+	{
+		TASK_Free|=myprio;
+	}
+#endif
+	
+	for (u16 i=0;i<tacksize;i++)
+	{
+		*(ptos-i)=IDLE_TACK_VALUE;
+	}
+	
+	TCB_Table[prio].TackInitial=ptos;
+	psp=OSTaskStkInit(task,p_arg,ptos,0);//初始化任务堆栈，返回新栈顶
+	OS_TCBInit (task,psp,prio);
+	TCB_Table[prio].TackUsed=tacksize&0x0000ffff;
+	return 0;
+}
+
+
+
+
 INT8U CreateTask (void   (*task)(void *p_arg),//任务首地址
                      void    *p_arg,					//任务参数
                      OS_STK  *ptos,						//任务堆栈地址顶，向下生长
@@ -62,6 +107,10 @@ INT8U CreateTask (void   (*task)(void *p_arg),//任务首地址
 	INT32U myprio=0x80000000>>prio;
 #endif
 	OS_STK *psp;
+	
+	
+	
+	
 	
 #if TASK_MAX_NUM<=32u
 	if (TASK_Free&myprio)
@@ -78,6 +127,89 @@ INT8U CreateTask (void   (*task)(void *p_arg),//任务首地址
 	OS_TCBInit (task,psp,prio);
 	return 0;
 }
+
+
+
+
+u16 GetTaskSize (u8 prio)
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u16 size=0;
+	OS_ENTER_CRITICAL();
+	size=TCB_Table[prio].TackUsed&0x0000ffff;
+	OS_EXIT_CRITICAL();
+	return size;
+}
+
+
+u16 GetTaskUsed (u8 prio)
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u16 used=0;
+	OS_ENTER_CRITICAL();
+	used=TCB_Table[prio].TackUsed>>16;
+	OS_EXIT_CRITICAL();
+	return used;
+}
+
+
+//校验任务堆栈使用率
+void CheckTaskUsege ( void )
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u32 used=0;
+	u32 used_old=0;
+	u32 *tack_p=0;
+	OS_ENTER_CRITICAL();
+	for (u8 i=0;i<TASK_MAX_NUM;i++)
+	{
+		if (TCB_Table[i].pTask)
+		{
+			tack_p=TCB_Table[i].TackInitial-(TCB_Table[i].TackUsed&0x0000ffff)+1;
+			while(*tack_p++==IDLE_TACK_VALUE);
+			//used=TCB_Table[i].TackInitial- TCB_Table[i].pMYStack;
+			used=(TCB_Table[i].TackInitial- tack_p)+1;
+			used_old=TCB_Table[i].TackUsed>>16;
+			if (used_old<used)		//记录最大使用量
+			{
+				TCB_Table[i].TackUsed&=0x0000ffff;
+				TCB_Table[i].TackUsed|=used<<16;
+			}
+		}
+	}
+	OS_EXIT_CRITICAL();
+	
+}
+
+//在任务切换时统计任务使用率
+void CheckHighRdyTaskUsege ( void )
+{
+	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
+		OS_CPU_SR  cpu_sr;
+	#endif
+	u32 used=0;
+	u32 used_old=0;
+	OS_ENTER_CRITICAL();
+	if (TCB_Table[OSPrioHighRdy].pTask)
+	{
+		used=TCB_Table[OSPrioHighRdy].TackInitial- TCB_Table[OSPrioHighRdy].pMYStack;
+		used_old=TCB_Table[OSPrioHighRdy].TackUsed>>16;
+		if (used_old<used)		//记录最大使用量
+		{
+			TCB_Table[OSPrioHighRdy].TackUsed&=0x0000ffff;
+			TCB_Table[OSPrioHighRdy].TackUsed|=used<<16;
+		}
+	}
+	OS_EXIT_CRITICAL();
+	
+}
+
 
 
 			//初始化任务堆栈结构体，
@@ -160,7 +292,11 @@ INT8U TaskPend (INT32U prio)
 	OS_EXIT_CRITICAL();
 	return 1;
 }
-			//任务恢复
+
+
+
+
+//任务恢复
 INT8U TaskRepend (INT32U prio)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
@@ -177,7 +313,9 @@ INT8U TaskRepend (INT32U prio)
 	return 1;
 }
 
-			//任务函数中切换任务
+
+
+//任务函数中切换任务
 void ToggleTasks(void)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
@@ -203,6 +341,9 @@ void ToggleTasks(void)
 
 //唤醒任务，通过优先级确定,这个函数中断调用可以唤醒任务
 //在中断中调用，需要加不可调度保护，
+//如果目标优先级已经注册，则发送消息
+//如果目标任务未被挂起，则设置任务为就绪状态
+//如果处于不可调度状态，不进行任务调度
 void TaskIntSendMsg(u8 pro,INT32U msg)
 {
 	if (pro>=TASK_MAX_NUM) return;
@@ -236,9 +377,13 @@ void TaskIntSendMsg(u8 pro,INT32U msg)
 	OS_EXIT_CRITICAL();
 }
 
-			//给其他任务发送消息，任务调用这个函数可以唤醒其他任务
-			//由于是在线程状态下调用的，需要加不可调度保护
-			//0,失败，1，成功
+
+
+//给其他任务发送消息，任务调用这个函数可以唤醒其他任务
+//由于是在线程状态下调用的，需要加不可调度保护
+//如果目标优先级已经注册，则发送消息
+//如果目标任务未被挂起，则设置任务为就绪状态
+//0,失败，1，成功
 u8 TaskSendMsg(u8 pro,INT32U msg)
 {
 	if (pro>=TASK_MAX_NUM) return 0;
@@ -265,7 +410,7 @@ u8 TaskSendMsg(u8 pro,INT32U msg)
 
 
 
-	//任务内部处理了消息之后调用这个函数开始休息
+//任务内部处理了消息之后调用这个函数开始休息
 void TaskMsgZero(void)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
@@ -277,25 +422,36 @@ void TaskMsgZero(void)
 }
 
 
-	//等待消息唤醒
+//等待消息唤醒
 INT32U TaskGetMsg(void)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
 		OS_CPU_SR  cpu_sr;
 	#endif
+	u32 msg=0;
 	OS_ENTER_CRITICAL(); 
-	TCB_Table[OSPrioHighRdy].MYWork=0;//休眠自己
-	Task_DelFree(OSPrioHighRdy);
+	if (TCB_Table[OSPrioHighRdy].MYWork==0)//做此判断用于支持自己给自己发消息
+		Task_DelFree(OSPrioHighRdy);
 	OS_EXIT_CRITICAL();
 	
 					//高优先级任务主动释放CPU在这里进行任务跳转
 	ToggleTasks();
-	while(!TASK_Free);
-	return TCB_Table[OSPrioHighRdy].MYWork;
+	while(!TASK_Free){};
+	OS_ENTER_CRITICAL(); 
+	msg=TCB_Table[OSPrioHighRdy].MYWork;
+	TCB_Table[OSPrioHighRdy].MYWork=0;//清除自身的消息
+	OS_EXIT_CRITICAL();	
+	return msg;
 }
+
+
 
 u8 ONLYME_PRO=TASK_MAX_NUM;//记录进入不可调度状态的任务
 
+
+
+
+//进入不可调度保护
 void OS_Enter_Onlyme(void)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
@@ -305,9 +461,11 @@ void OS_Enter_Onlyme(void)
 	OS_ONLYME++;
 	ONLYME_PRO=OSPrioHighRdy;					//找出造成CPU独占的任务
 	OS_EXIT_CRITICAL();
-	
 }
 
+
+
+//退出不可调度保护
 void OS_Exit_Onlyme(void)
 {
 	#if OS_CRITICAL_METHOD == 3          /* Allocate storage for CPU status register */
@@ -318,8 +476,7 @@ void OS_Exit_Onlyme(void)
 	if (!OS_ONLYME)
 		ONLYME_PRO=TASK_MAX_NUM;
 	OS_EXIT_CRITICAL();
-	
-	
+
 	ToggleTasks();
 }
 

@@ -1,6 +1,8 @@
 
 #include "includes.h"
 #include "iwdg.h"
+#include "power.h"
+#include "my_messeg.h"
 #include "my_idle.h"
 
 
@@ -16,9 +18,19 @@ void idle_task (void *t)
 	#endif
 	while(1)
 	{
+		
+		if (getSysRunTime()>60*60*24)
+		{
+			SysPowerOff();
+		}
+		
+		
+		
 		for (i=0;i<TASK_MAX_NUM;i++)
 		{
 			OS_ENTER_CRITICAL();
+			
+						
 			IWDG_Feed();
 			if (getSysRunTime()- TCB_Table[i].LastTime>60*2)
 			{
@@ -30,6 +42,18 @@ void idle_task (void *t)
 					TaskRepend(i);
 				}
 			}
+			
+			if (getSysRunTime()- TCB_Table[i].LastTime>60*5)
+			{
+				if (TCB_Table[i].pTask)
+				{
+					if (i==3||i==7||i==8)
+					{
+						SysPowerOff();
+					}
+				}
+			}
+			
 			OS_EXIT_CRITICAL();
 		}
 	}

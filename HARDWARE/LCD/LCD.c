@@ -31,6 +31,8 @@ static u8 USART2_RX_CNT=0;
 static u8 USART2_IDLE=1;
   
 	
+#define USART2_RX_ENABLE  *((volatile unsigned long  *)(0x42000000 + (((u32)(&USART2->CR1))*32) + (5*4)))=1
+#define USART2_RX_DISABLE  *((volatile unsigned long  *)(0x42000000 + (((u32)(&USART2->CR1))*32) + (5*4)))=0
 	
 	
 	
@@ -152,12 +154,15 @@ void LCD_Receive_Data(u8 *buf,u16 *len)
 {
 	u8 rxlen=USART2_RX_CNT;
 	u8 i=0;
-	*len=USART2_RX_CNT;				//默认为0
+	*len=0;
 	if (USART2_IDLE==1)
 	{
+		USART2_RX_DISABLE;
+		*len=USART2_RX_CNT;				//默认为0
 		mymemcpy (buf,USART2_RX_BUF,rxlen);
 		mymemset (USART2_RX_BUF,0,rxlen);
 		USART2_RX_CNT=0;
+		USART2_RX_ENABLE;
 	}
 }
 

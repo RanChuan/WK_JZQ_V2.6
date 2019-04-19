@@ -11,11 +11,6 @@
 
 
 
-//亮按键灯
-void key_light (u8 key_num,u8 state);
-
-//按键周围的灯
-void key_around (u8 key_num,u8 state);
 
 		
 void led_light (u16 num,u8 state,u8 red,u8 green,u8 blue);

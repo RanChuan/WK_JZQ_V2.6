@@ -76,10 +76,10 @@ void my_lcd (void * t)
 	u8 buf[30]={0};u16 reclen;
 	u16 i=0;
 	u8 meg[MESSEG_DATA]={0};
+	LCD_SetFocus(OSPrioHighRdy); 
 	Relay_Init();
 	LCD_Init(9600);
 	my_lcd_init();
-	LCD_SetFocus(OSPrioHighRdy); 
 	while (1)
 	{
 		delay_ms(30);
@@ -197,40 +197,14 @@ void AutoCtr(void)
 
 
 
-						//屏幕睡眠按键
+//屏幕睡眠按键，给自己发送息屏消息
 void lcd_sleep(void)
 {
 	u8 meg[MESSEG_DATA]={0};
-	u8 light[MESSEG_DATA]={0};
-	static u8 lcd_light=0x3f;//屏幕的亮度
-	if (lcd_light)
-//	if (get_keystate(LCD_STATE_))
 	{
-		lcd_light=0;
 		meg[0]=3;meg[1]=1;
-		meg[2]=0;meg[3]=0;
+		meg[2]=0xff;meg[3]=0;
 		meg[4]=1;meg[5]=0;
-		light[0]=1;light[1]=LCD_STATE_;
-		light[2]=lcd_light;//亮度改为0
-		send_messeg(KEY_MESSEG,light);
-		light[0]=2;light[1]=1;
-		light[2]=LCD_STATE_;
-		send_messeg(LIT_MESSEG,light);
-		send_messeg(LCD_MESSEG,meg);//
-//		lcd_light=get_keystate(LCD_STATE_);
-	}
-	else
-	{
-		lcd_light=0x3f;
-		meg[0]=3;meg[1]=1;
-		meg[2]=lcd_light;meg[3]=0;
-		meg[4]=1;meg[5]=0;
-		light[0]=1;light[1]=LCD_STATE_;
-		light[2]=lcd_light;
-		send_messeg(KEY_MESSEG,light);
-		light[0]=2;light[1]=0;
-		light[2]=LCD_STATE_;
-		send_messeg(LIT_MESSEG,light);
 		send_messeg(LCD_MESSEG,meg);//
 	}
 	
@@ -293,7 +267,7 @@ void Time_Set()//休眠时间设置保存
 	u16 time_min; 
 	u16 time_sec; 
 	
-	
+	delay_ms(20);
 			gettime[5]=0x24;
 			LCD_Send_Data(gettime,7);delay_ms(20);
 			LCD_Receive_Data(R_buff,&R_len);
@@ -396,8 +370,10 @@ void Auto_sleep()
 void my_lcd_init (void)
 {
 	RELAY=0;
-	delay_ms(4000);
 	Load_LCD();
+	sleep_ms(1000);
+	lcd_page(PAGE_MAIN);
+	sleep_ms(6000);
 	lcd_page(PAGE_MAIN);
 }
 
@@ -549,7 +525,7 @@ void lcd_chan_state (u8 type,u8 state)
 	
 }
 
-					//屏幕消息处理，02
+//屏幕消息处理，02
 void lcd_messeg_02 (u8 *meg)
 {
 	if (meg[2]==WENDU_UP)
@@ -719,44 +695,77 @@ void LCD_tolight (void)
 
 
 
-				//屏幕电源控制
+//屏幕电源控制
 void	lcd_messeg_03 (u8 *meg)
 {
 	u8 dd[6]={0x5A, 0xA5, 0x03, 0x80, 0x01,0};
-	static u8 power=0;
-	static u8 lcd_light=0x3f;
+	u8 light[MESSEG_DATA]={0};
+	static u8 light_i=0;
+	static u8 power=1;
+	const u8 lcd_light[3]={0x3f,0x10,0};
 	if (meg[0]==0x03)
 	{
 		if (meg[1]==1)//屏幕是开着的，亮度控制
 		{
-			dd[5]=meg[2];//屏幕亮度
-			LCD_Send_Data(dd,6);
-			if (meg[2]!=0)
+			if (power)//在屏幕有电的情况才可以设置亮度
 			{
-				lcd_light=meg[2];
+				if (meg[2]==0xff)//按键
+				{
+					dd[5]=lcd_light[light_i++];//屏幕亮度
+					if (light_i>=3) light_i=0;
+				}
+				else
+				{
+					dd[5]=meg[2];
+					if (meg[2]==0)
+						light_i=0;
+				}
+				LCD_Send_Data(dd,6);
+				if (dd[5]==0)//打开按键灯提示
+				{
+					light[0]=2;light[1]=1;
+					light[2]=LIGHT_LCD_STATE;
+					send_messeg(LIT_MESSEG,light);
+				}
+				else
+				{
+					light[0]=2;light[1]=0;
+					light[2]=LIGHT_LCD_STATE;
+					send_messeg(LIT_MESSEG,light);
+				}
 			}
 		}
 		else	if (meg[1]==0)//屏幕关，关继电器
 		{
-			if (meg[2]==1)
+			if (meg[2]==0xff)
 			{
-				LCD_POWER=0;
-				power=1;
+				power=!power;
 			}
-			else 
+			else
 			{
+				power=meg[2];
+			}
+			if (power)
+			{
+				light[0]=1;light[1]=0;
+				light[2]=LIGHT_LCD_STATE;
+				send_messeg(LIT_MESSEG,light);
+				LCD_POWER=0;
+				sleep_ms(4000);
+				lcd_page (PAGE_MAIN);
+				delay_ms(30);
+				dd[5]=lcd_light[0];//屏幕亮度
+				LCD_Send_Data(dd,6);
+			}
+			else
+			{
+				light[0]=1;light[1]=1;
+				light[2]=LIGHT_LCD_STATE;
+				send_messeg(LIT_MESSEG,light);
+				delay_ms(200);
 				LCD_POWER=1;
 			}
 		}
-	}
-	if (power>0)
-	{
-		delay_ms(1000);
-		lcd_page (PAGE_MAIN);
-		delay_ms(30);
-		dd[5]=lcd_light;//屏幕亮度
-		LCD_Send_Data(dd,6);
-		power=0;
 	}
 }
 
@@ -774,7 +783,7 @@ u8 lcd_gettime (u16 *hour,u16 *min,u16 *sec)
 		*min=(R_buff[7]>>4)*10+(R_buff[7]&0x0f);
 		*sec=(R_buff[8]>>4)*10+(R_buff[8]&0x0f);
 	}
-	
+	return 0;
 }
 
 
@@ -782,6 +791,7 @@ u8 lcd_gettime (u16 *hour,u16 *min,u16 *sec)
 
 void lcd_timetosleep(void)
 {
+	u8 meg[MESSEG_DATA]={0};
 	if (LCD_AUTOSLEEP)
 	{
 		static u16 i=0;
@@ -793,11 +803,19 @@ void lcd_timetosleep(void)
 			lcd_gettime (&time_hour,&time_min,&time_sec);
 			if ((time_hour==LCD_POWER_HS)&&(time_min==LCD_POWER_SS)&&(time_sec<=7)) 
 			{
-					LCD_tosleep();
+				meg[0]=3;meg[1]=1;
+				meg[2]=0;meg[3]=0;
+				meg[4]=1;meg[5]=0;
+				send_messeg(LCD_MESSEG,meg);//
+				//LCD_tosleep();
 			}
 			else if ((time_hour==LCD_POWER_HE)&&(time_min==LCD_POWER_SE)&&(time_sec<=7)) 
 			{
-				LCD_tolight();
+				meg[0]=3;meg[1]=1;
+				meg[2]=0x3f;meg[3]=0;
+				meg[4]=1;meg[5]=0;
+				send_messeg(LCD_MESSEG,meg);//
+				//LCD_tolight();
 			}
 
 			
@@ -835,6 +853,7 @@ void Set_Save(void)//设置页面保存
 {
 	u8 buf[20]={0};
 	u16 reclen=0;
+	delay_ms(20);
 	LCD_GET_DATA[5]=WENDU_UP_ADDR;
 	LCD_Send_Data(LCD_GET_DATA,7);
 	delay_ms(20);

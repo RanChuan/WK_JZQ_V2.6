@@ -148,7 +148,6 @@ u8 tcp_close(SOCKET s)
 
 u8 udp_close(SOCKET s)
 {
-	OS_ENTER_ONLYME();
 	
 	Write_W5500_SOCK_1Byte(s,Sn_CR,SN_CLOSE);//设置Socket为Connect模式
 	u8 i=20;
@@ -160,7 +159,6 @@ u8 udp_close(SOCKET s)
 			break;
 		}
 	}while(--i);
-	OS_EXIT_ONLYME();
 	
 	if (i==0)
 	{

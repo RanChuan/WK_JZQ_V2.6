@@ -10,6 +10,8 @@
 u8 DBG_COPY_TO_S1CK=0;
 
 
+extern u32 Transaction;
+#define CMD_NUM (*MAC+Transaction++)
 
 
 
@@ -808,6 +810,12 @@ u8 send_json_cj (u8 *msg)
 	  cJSON_AddStringToObject(root,"devType","cjq");//设备类型采集器
 	  cJSON_AddStringToObject(root,"cmd","swap");//数据交换
 
+	
+		char *buff=mymalloc(64);//消息唯一标识
+		sprintf(buff,"%d",CMD_NUM); 
+		cJSON_AddStringToObject(root,"cmdNum",buff);
+	
+	
 		if (Lcd_GetHandstate()==0)
 		{
 			cJSON_AddStringToObject(root,"mode","auto");
@@ -841,7 +849,7 @@ u8 send_json_cj (u8 *msg)
 		cJSON_Delete(root);
 		server_send_data((u8*)out);//发送数据，自动写入回车换行
 		myfree(out);
-
+		myfree(buff);
 		
 		
 		
@@ -944,8 +952,6 @@ u8 send_json_kz (u8 *msg)
 		msg3，msg4，设备地址
 		msg5，报警值，实际的环境值
 */
-extern u32 Transaction;
-#define CMD_NUM (*MAC+Transaction++)
 
 
 

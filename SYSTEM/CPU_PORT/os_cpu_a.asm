@@ -173,7 +173,7 @@ PendSV_Handler			;任务切换中断
 
                                                                 ; At this point, entire context of process has been saved
 PendSV_Handler_Nosave
-;    PUSH    {R14}                                               ; Save LR exc_return value
+ ;   PUSH    {R14}                                               ; Save LR exc_return value
  ;   LDR     R0, =OSTaskSwHook                                   ; OSTaskSwHook();
  ;   BLX     R0
  ;   POP     {R14}					//没用到呀，，
